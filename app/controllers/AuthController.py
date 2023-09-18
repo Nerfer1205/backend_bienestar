@@ -36,7 +36,7 @@ def login():
         token = jwt.encode({'usuario': req_usuario, 'contrasena': req_contrasena}, current_app.config['JWT_SECRET_KEY'])
         return jsonify({"success": True, "message" : "¡Bienvenido!", "token": token}) , HTTPStatus.OK
     
-    return jsonify({"success": False, "message" : str(conexion)}) , HTTPStatus.BAD_REQUEST
+    return jsonify({"success": False, "message" : str(puedoConectarme)}) , HTTPStatus.BAD_REQUEST
 
 @auth_bp.route('/registro', methods=['POST'])
 def registro():

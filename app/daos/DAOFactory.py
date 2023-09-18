@@ -15,6 +15,7 @@ from app.daos.DAOoracle import (
     TICKET_DAO_ORACLE,
     SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO_ORACLE,
     ACTIVIDADES_DE_APOYO_DAO_ORACLE,
+    DBA_USERS_DAO_ORACLE,
 )
 
 
@@ -35,82 +36,105 @@ class DAOFactoryOracle:
     _ticket_dao = None
     _solicitudes_aprobadas_actividades_de_apoyo_dao = None
     _actividades_de_apoyo_dao = None
+    _usuario_dao = None
 
+    @classmethod
     def __new__(self, *args, **kwargs):
         if not self._instance:
             self._instance = super().__new__(self)
         return self._instance
 
+    @classmethod
     def get_tipo_subsidio_dao(self):
         if not self._tipo_subsidio_dao:
             self._tipo_subsidio_dao = TIPO_SUBSIDIO_DAO_ORACLE()
         return self._tipo_subsidio_dao
 
+    @classmethod
     def get_convocatoria_tipo_subsidio_dao(self):
         if not self._convocatoria_tipo_subsidio_dao:
             self._convocatoria_tipo_subsidio_dao = CONVOCATORIA_TIPO_SUBSIDIO_DAO_ORACLE()
         return self._convocatoria_tipo_subsidio_dao
 
+    @classmethod
     def get_convocatoria_dao(self):
         if not self._convocatoria_dao:
             self._convocatoria_dao = CONVOCATORIA_DAO_ORACLE()
         return self._convocatoria_dao
 
+    @classmethod
     def get_convocatoria_tipo_dao(self):
         if not self._convocatoria_tipo_dao:
             self._convocatoria_tipo_dao = CONVOCATORIA_TIPO_DAO_ORACLE()
         return self._convocatoria_tipo_dao
 
+    @classmethod
     def get_tipo_dao(self):
         if not self._tipo_dao:
             self._tipo_dao = TIPO_DAO_ORACLE()
         return self._tipo_dao
 
+    @classmethod
     def get_condiciones_dao(self):
         if not self._condiciones_dao:
             self._condiciones_dao = CONDICIONES_DAO_ORACLE()
         return self._condiciones_dao
 
+    @classmethod
     def get_documentos_dao(self):
         if not self._documentos_dao:
             self._documentos_dao = DOCUMENTOS_DAO_ORACLE()
         return self._documentos_dao
 
+    @classmethod
     def get_solicitudes_dao(self):
         if not self._solicitudes_dao:
             self._solicitudes_dao = SOLICITUDES_DAO_ORACLE()
         return self._solicitudes_dao
 
+    @classmethod
     def get_estudiantes_dao(self):
         if not self._estudiantes_dao:
             self._estudiantes_dao = ESTUDIANTES_DAO_ORACLE()
         return self._estudiantes_dao
 
+    @classmethod
     def get_solicitudes_aprobadas_dao(self):
         if not self._solicitudes_aprobadas_dao:
             self._solicitudes_aprobadas_dao = SOLICITUDES_APROBADAS_DAO_ORACLE()
         return self._solicitudes_aprobadas_dao
 
+    @classmethod
     def get_responsable_dao(self):
         if not self._responsable_dao:
             self._responsable_dao = RESPONSABLE_DAO_ORACLE()
         return self._responsable_dao
 
+    @classmethod
     def get_tiquetera_dao(self):
         if not self._tiquetera_dao:
             self._tiquetera_dao = TIQUETERA_DAO_ORACLE()
         return self._tiquetera_dao
 
+    @classmethod
     def get_ticket_dao(self):
         if not self._ticket_dao:
             self._ticket_dao = TICKET_DAO_ORACLE()
         return self._ticket_dao
 
+    @classmethod
     def get_solicitudes_aprobadas_actividades_de_apoyo_dao(self):
         if not self._solicitudes_aprobadas_actividades_de_apoyo_dao:
             self._solicitudes_aprobadas_actividades_de_apoyo_dao = SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO_ORACLE()
         return self._solicitudes_aprobadas_actividades_de_apoyo_dao
 
+    @classmethod
     def get_actividades_de_apoyo_dao(self):
         if not self._actividades_de_apoyo_dao:
             self._actividades_de_apoyo_dao
+
+    @classmethod
+    def get_usuario_dao(self):
+        if not self._usuario_dao:
+            self._usuario_dao = DBA_USERS_DAO_ORACLE()
+        return self._usuario_dao

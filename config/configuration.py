@@ -11,8 +11,9 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     SECRET_KEY = 'dev'
+    DEBUG=True
     JWT_SECRET_KEY = ''
-    LIB_DIR = 'C:/app/USER/product/21c/dbhomeXE/bin'
-    ORACLE_DSN = 'PDB1'
-    ORACLE_USER = 'bienestar'
-    ORACLE_PASS = 'bienestar'
+    LIB_DIR = 'D:/app/Bryant/product/21c/dbhomeXE/bin'
+    ORACLE_DSN = 'BRYANT_PDB'
+    ORACLE_USER = 'ADM_SEG'
+    ORACLE_PASS = 'ADM_SEG'

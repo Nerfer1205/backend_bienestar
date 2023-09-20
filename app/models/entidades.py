@@ -122,13 +122,13 @@ class CONDICIONES(Entidad):
 
 #otra compuesta
 class DOCUMENTOS(Entidad):
-    def __init__(self, RUTA = '', ESTADO = '', PUNTAJE_OBTENIDO = 0 , FK_ID_CONDICION = '', FK_ID_SOLICITUD = '', id = None ):
+    def __init__(self, RUTA = '', ESTADO = '', PUNTAJE_OBTENIDO = 0 , FK_ID_CONDICION = None, FK_ID_SOLICITUD = None, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_DOCUMENTO","id_txt"], 'ID_DOCUMENTO')
+            super().__init__(id,["no_attr","id","id_txt"], 'ID_DOCUMENTO')
             self.ID_DOCUMENTO = id
         else:
-            super().__init__(0,["no_attr","id","ID_DOCUMENTO","id_txt"], 'ID_DOCUMENTO')
+            super().__init__(0,["no_attr","id","id_txt"], 'ID_DOCUMENTO')
             self.ID_DOCUMENTO = id
         
         self.RUTA = RUTA
@@ -138,13 +138,13 @@ class DOCUMENTOS(Entidad):
         self.FK_ID_SOLICITUD = FK_ID_SOLICITUD
 
 class SOLICITUDES(Entidad):
-    def __init__(self, FECHA_CREACION = None, ESTADO = '', PUNTAJE_TOTAL = 0 , MOTIVO_RECHAZO = '', FK_CODIGO = '', FK_ID_CONVOCATORIA = '', FK_RESPONSABLE_VERIFICAR = '', id = None ):
+    def __init__(self, FECHA_CREACION = None, ESTADO = None, PUNTAJE_TOTAL = None, MOTIVO_RECHAZO = None, FK_CODIGO = None, FK_ID_CONVOCATORIA = None, FK_RESPONSABLE_VERIFICAR = None, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_SOLICITUD","id_txt"], 'ID_SOLICITUD')
+            super().__init__(id,["no_attr","id","ID_SOLICITUD","FECHA_CREACION", "ESTADO" ,"id_txt"], 'ID_SOLICITUD')
             self.ID_SOLICITUD = id
         else:
-            super().__init__(0,["no_attr","id","ID_SOLICITUD","id_txt"], 'ID_SOLICITUD')
+            super().__init__(0,["no_attr","id","ID_SOLICITUD","FECHA_CREACION", "ESTADO" ,"id_txt"], 'ID_SOLICITUD')
             self.ID_SOLICITUD = id
         
         self.FECHA_CREACION = FECHA_CREACION
@@ -156,7 +156,7 @@ class SOLICITUDES(Entidad):
         self.FK_RESPONSABLE_VERIFICAR = FK_RESPONSABLE_VERIFICAR
 
 class ESTUDIANTES(Entidad):
-    def __init__(self, PROYECTO = '', SEMESTRE = '', TIPO_DOCUMENTO = '' , DOCUMENTO = '', NOMBRES = '', APELLIDOS = '', TELEFONO = '', DIRECCION = '', MUNICIPIO = '', COSTO_SEM = None , INGRESOS = None, PROMEDIO_PONDERADO = None, ASIG_PERDIDAS_SEM_PASADO = 0, NUM_CREDITOS = 0, ESTADO = '', id = None ):
+    def __init__(self, PROYECTO = '', SEMESTRE = '', TIPO_DOCUMENTO = '' , DOCUMENTO = '', NOMBRES = '', APELLIDOS = '', TELEFONO = '', DIRECCION = '', MUNICIPIO = '', COSTO_SEM = None , INGRESOS = None, PROMEDIO_PONDERADO = None, ASIG_PERDIDAS_SEM_PASADO = 0, NUM_CREDITOS = 0, ESTADO = '', USUARIO = '', id = None ):
         
         if id is not None:
             super().__init__(id,["no_attr","id","CODIGO","id_txt"], 'CODIGO')
@@ -180,6 +180,7 @@ class ESTUDIANTES(Entidad):
         self.ASIG_PERDIDAS_SEM_PASADO = ASIG_PERDIDAS_SEM_PASADO
         self.NUM_CREDITOS = NUM_CREDITOS
         self.ESTADO = ESTADO
+        self.USUARIO = USUARIO
 
 class SOLICITUDES_APROBADAS(Entidad):
     def __init__(self, FECHA_APROBACION = None, ESTADO = '', MOTIVO_FINALIZACION = '', FK_ID_SOLICITUD = '', FK_ID_TIPO_SUBSIDIO = '', FK_RESPONSABLE_APROBAR = '', id = None ):

@@ -13,7 +13,9 @@ def token_required(f):
            return jsonify({'error': 'Token faltante'}), HTTPStatus.UNAUTHORIZED
 
         try:
-           data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'])
+            data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'])
+            current_app.config['ORACLE_USER'] = "U_" + data['usuario']
+            current_app.config['ORACLE_PASS'] = data['contrasena']
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'El token ha expirado'}), HTTPStatus.UNAUTHORIZED
         except jwt.InvalidTokenError:
@@ -25,3 +27,7 @@ def token_required(f):
 
     return decorated
 
+def ver_datos_token():
+    token = request.headers.get('Authorization')
+    data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], ["HS256"])
+    return data

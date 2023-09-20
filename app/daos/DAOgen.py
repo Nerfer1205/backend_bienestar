@@ -31,25 +31,47 @@ class CONVOCATORIA_TIPO_SUBSIDIO_DAO(DAOGenerico):
     pass
 
 class CONVOCATORIA_DAO(DAOGenerico):
-    pass
+    @abstractmethod
+    def obtener_ultima(self):
+        pass
+
 
 class CONVOCATORIA_TIPO_DAO(DAOGenerico):
     pass
 
 class TIPO_DAO(DAOGenerico):
-    pass
+    @abstractmethod
+    def tipos_x_convocatoria(self, id_convocatoria):
+        pass
 
 class CONDICIONES_DAO(DAOGenerico):
     pass
 
 class DOCUMENTOS_DAO(DAOGenerico):
-    pass
+    @abstractmethod
+    def documentos_tipo_condicion_x_solicitud(self, id_solicitud):
+        pass
+
+    @abstractmethod
+    def actualizar_estado_documento(self, id_solicitud, id_documento, estado):
+        pass
+    
 
 class SOLICITUDES_DAO(DAOGenerico):
-    pass
+    @abstractmethod
+    def actualizar_estado(self, id_solicitud, estado):
+        pass
+    @abstractmethod
+    def solicitud_x_estu_x_conv(self, FK_CODIGO, FK_ID_CONVOCATORIA):
+        pass
+    @abstractmethod
+    def solicitud_x_convocatoria(self,FK_ID_CONVOCATORIA):
+        pass
 
 class ESTUDIANTES_DAO(DAOGenerico):
-    pass
+    @abstractmethod
+    def estudiante_x_usuario(self):
+        pass
 
 class SOLICITUDES_APROBADAS_DAO(DAOGenerico):
     pass
@@ -71,6 +93,6 @@ class ACTIVIDADES_DE_APOYO_DAO(DAOGenerico):
 
 class DBA_USERS_DAO(DAOGenerico):
     @abstractmethod
-    def crear_usuario(usuario, contrasena):
+    def crear_usuario(self,usuario, contrasena):
         pass
 

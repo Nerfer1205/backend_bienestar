@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, current_app
 from http import HTTPStatus
 from app.funciones.token_jwt import token_required
 from app.daos.DAOFactory import DAOFactoryOracle
-from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES
+from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES, TIPO_SUBSIDIO, TIPO
 from oracledb import Error
 import datetime
 
@@ -244,6 +244,44 @@ def actualizar_documentos():
         return jsonify({"success": False, "message" : str(actualizoSolicitud)}) , HTTPStatus.BAD_REQUEST
 
     return jsonify({"success": True, "message" : "Estado de los documentos actualizados con éxito!"}) , HTTPStatus.OK
+
+@convocatoria_bp.route('/tipos-subsidios',methods=["GET"])
+@token_required
+def obtener_tipos_subsidios():
+    tipos_subsidios = DAOFactoryOracle.get_tipo_subsidio_dao().findall(TIPO_SUBSIDIO())
+    if isinstance(tipos_subsidios, Error):
+        return jsonify({"success": False, "message" : str(tipos_subsidios)}) , HTTPStatus.BAD_REQUEST
+    print(tipos_subsidios)
+
+    tipos_subsidios_dict = [{"ID_TIPO_SUBSIDIO": tip.ID_TIPO_SUBSIDIO,
+                         "NOMBRE": tip.NOMBRE,
+                         "POR_COBERTURA": tip.POR_COBERTURA,
+                         "HRS_DEDICACION_X_SEM": tip.HRS_DEDICACION_X_SEM
+                         } for tip in tipos_subsidios]
+    
+    return jsonify({"success": True, "message" : "Tipos de subsidios consultados con éxito!", "data": {
+        "TIPOS_SUBSIDIOS" : tipos_subsidios_dict
+    }}) , HTTPStatus.OK
+
+@convocatoria_bp.route('/variables',methods=["GET"])
+@token_required
+def obtener_variables():
+    variables = DAOFactoryOracle.get_tipo_subsidio_dao().findall(TIPO())
+    if isinstance(variables, Error):
+        return jsonify({"success": False, "message" : str(variables)}) , HTTPStatus.BAD_REQUEST
+    
+    variables_dict = []
+    for variable in variables:        
+        condiciones = DAOFactoryOracle.get_condiciones_dao().condiciones_x_tipo(variable.ID_TIPO)
+        if isinstance(condiciones, Error):
+            return jsonify({"success": False, "message" : str(condiciones)}) , HTTPStatus.BAD_REQUEST
+        condiciones_dict = [{"ID_CONDICION": condicion.ID_CONDICION, "NOMBRE": condicion.NOMBRE} for condicion in condiciones]
+        variables_dict.append({"ID_TIPO":variable.ID_TIPO, "NOMBRE": variable.NOMBRE, "PUNTAJE_MAX":variable.PUNTAJE_MAX, "CONDICIONES" : condiciones_dict }) 
+    
+    return jsonify({"success": True, "message" : "Tipos de subsidios consultados con éxito!", "data": {
+        "VARIABLES" : variables_dict
+    }}) , HTTPStatus.OK
+
 
 def verificar_datos_vacios_inscribirme(json_recibido):
     if 'usuario' not in json_recibido or len(json_recibido['usuario'].strip()) == 0:

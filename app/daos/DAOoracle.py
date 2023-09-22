@@ -1,7 +1,7 @@
 import oracledb
 from flask import current_app
 from app.daos import DAOgen
-from app.models.entidades import ESTUDIANTES, CONVOCATORIA, TIPO, CONDICIONES, SOLICITUDES
+from app.models.entidades import ESTUDIANTES, CONVOCATORIA, TIPO, CONDICIONES, SOLICITUDES, TIPO_SUBSIDIO, TIPO
 
 class DAOgenericoOracle(DAOgen.DAOGenerico):
     def __init__(self):

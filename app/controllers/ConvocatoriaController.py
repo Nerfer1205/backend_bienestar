@@ -7,30 +7,33 @@ from app.funciones.token_jwt import token_required
 from app.daos.DAOFactory import DAOFactoryOracle
 from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES
 from oracledb import Error
+import datetime
 
-ruta = 'http://test.com/uploads/'
+
+ruta = 'http://127.0.0.1:5000/static/uploads/'
 
 convocatoria_bp = Blueprint('convocatoria', __name__)
-@token_required
+
 @convocatoria_bp.route('/ver-ultima/',methods=["GET"])
+@token_required
 def ver_ultima():
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima()
     if isinstance(convocatoria, Error):
         return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
     if convocatoria is None:
         return jsonify({"success": False, "message" : "Aun no existen convocatorias"}) , HTTPStatus.BAD_REQUEST
-
+    
     return jsonify({"success": True, "message" : "Convocatoria consultada con éxito!", "data": {
         "CONVOCATORIA" : {
             "ID_CONVOCATORIA": convocatoria.ID_CONVOCATORIA,
-            "FECHA_I_INSC": convocatoria.FECHA_I_INSC,
-            "FECHA_F_INSC": convocatoria.FECHA_I_VERIF,
+            "FECHA_I_INSC": dateToStr(convocatoria.FECHA_I_INSC),
+            "FECHA_F_INSC": dateToStr(convocatoria.FECHA_I_VERIF),
             "ESTADO": convocatoria.ESTADO
         }
     }}) , HTTPStatus.OK
 
+@convocatoria_bp.route('/ver-para-estudiante/<id_convocatoria>',methods=["GET"])
 @token_required
-@convocatoria_bp.route('/ver-para-estudiante/<str:id_convocatoria>',methods=["GET"])
 def ver_para_estudiante(id_convocatoria):
     convocatoria = CONVOCATORIA(id=id_convocatoria)
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
@@ -41,7 +44,8 @@ def ver_para_estudiante(id_convocatoria):
     tipos_x_convocatoria = DAOFactoryOracle.get_tipo_dao().tipos_x_convocatoria(id_convocatoria)
     if isinstance(tipos_x_convocatoria, Error):
         return jsonify({"success": False, "message" : str(tipos_x_convocatoria)}) , HTTPStatus.BAD_REQUEST
-    data = {"CONVOCATORIA" : {"ID_CONVOCATORIA": convocatoria["ID_CONVOCATORIA"], "TIPOS": []}}
+    
+    data = {"CONVOCATORIA" : {"ID_CONVOCATORIA": convocatoria.ID_CONVOCATORIA, "TIPOS": []}}
     for tipo in tipos_x_convocatoria:
         temp_condiciones = []        
         condiciones_x_tipo = DAOFactoryOracle.get_condiciones_dao().condiciones_x_tipo(tipo.ID_TIPO)
@@ -63,8 +67,8 @@ def ver_para_estudiante(id_convocatoria):
 
 
 
-@token_required
 @convocatoria_bp.route('/inscribirme',methods=["POST"])
+@token_required
 def inscribir_estudiante():
     
     if 'id_convocatoria' not in request.form or len(request.form.get('id_convocatoria').strip()) == 0:
@@ -124,7 +128,7 @@ def inscribir_estudiante():
                 documento_condicion = request.form.get(nm_var_condicion)
                 file.save(os.path.join(upload_folder, documento_ruta))
                 documento_bd = DOCUMENTOS(
-                    ID_DOCUMENTO=contador,
+                    id=contador,
                     RUTA=documento_ruta,
                     ESTADO='POR REVISAR',
                     FK_ID_CONDICION=documento_condicion,
@@ -137,8 +141,8 @@ def inscribir_estudiante():
         contador+=1
     return jsonify({"success": True, "message" : "Solicitud agregada con éxito!"}) , HTTPStatus.OK
 
-@token_required
 @convocatoria_bp.route('/ver-solicitudes-ultima-conv',methods=["GET"])
+@token_required
 def ver_solicitudes_ultima_conv():
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima()
     if isinstance(convocatoria, Error):
@@ -157,12 +161,18 @@ def ver_solicitudes_ultima_conv():
                          } for respSol in consultaSolicitudes]
     
     return jsonify({"success": True, "message" : "Solicitudes consultadas con éxito!", "data": {
-        "SOLICITUDES": solicitudes_dict
+        "SOLICITUDES": solicitudes_dict,
+        "CONVOCATORIA": {
+            "ID_CONVOCATORIA": convocatoria.ID_CONVOCATORIA,
+            "FECHA_I_INSC": dateToStr(convocatoria.FECHA_I_INSC),
+            "FECHA_F_INSC": dateToStr(convocatoria.FECHA_I_VERIF),
+            "ESTADO": convocatoria.ESTADO
+        }
     }}) , HTTPStatus.OK
 
+@convocatoria_bp.route('/ver-documentos/<id_convocatoria>/<id_solicitud>',methods=["GET"])
 @token_required
-@convocatoria_bp.route('/ver-documentos/<str:id_convocatoria>/<str:id_solicitud>',methods=["GET"])
-def ver_solicitudes_ultima_conv(id_convocatoria, id_solicitud):
+def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(CONVOCATORIA(id=id_convocatoria))
     if isinstance(convocatoria, Error):
         return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
@@ -190,8 +200,8 @@ def ver_solicitudes_ultima_conv(id_convocatoria, id_solicitud):
         "DOCUMENTOS": documentos_dict
     }}) , HTTPStatus.OK
 
-@token_required
 @convocatoria_bp.route('/actualizar-documentos',methods=["POST"])
+@token_required
 def actualizar_documentos():
 
     if 'id_convocatoria' not in request.form or len(request.form.get('id_convocatoria').strip()) == 0:
@@ -243,3 +253,8 @@ def verificar_datos_vacios_inscribirme(json_recibido):
         return jsonify({"success": False, "error" : "Campo contrasena vacio"})
     
     return None
+
+def dateToStr(date):
+    fecha = datetime.datetime.strptime(str(date), "%Y-%m-%d %H:%M:%S")
+    return fecha.strftime("%Y-%m-%d")
+     

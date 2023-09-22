@@ -5,38 +5,52 @@ from app.models.entidades import ESTUDIANTES, CONVOCATORIA, TIPO, CONDICIONES, S
 
 class DAOgenericoOracle(DAOgen.DAOGenerico):
     def __init__(self):
-        self.__conexion = None
+        self.conexion = None
         self.cursor = None
         self.esquema = 'BIENESTAR'
         oracledb.init_oracle_client(current_app.config['LIB_DIR'])
     
     def conectar(self):
         try:
-            self.__conexion = oracledb.connect(
+            self.conexion = oracledb.connect(
                 user=current_app.config['ORACLE_USER'],
                 password=current_app.config['ORACLE_PASS'], 
                 dsn=current_app.config['ORACLE_DSN']
             )
-            self.cursor = self.__conexion.cursor()
+            self.cursor = self.conexion.cursor()
             return True
         except oracledb.Error as error:
             return error
 
     def create(self, entity):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             columns, values = entity.get_attrs()
             columns_str = ", ".join(columns)
             placeholders_str = ", ".join(":" + column for column in columns)
             sql = f"INSERT INTO {self.esquema}.{entity.get_name_class()} ({columns_str}) VALUES ({placeholders_str})"
+            print(sql, values)
             self.cursor.execute(sql, values)
-            self.__conexion.commit()
+            if(entity.id_txt != ''):
+                sql = f"SELECT max({entity.id_txt}) FROM {self.esquema}.{entity.get_name_class()}"
+                self.cursor.execute(sql)
+                res = self.cursor.fetchone()
+
+                id_generada = res[0]
+                setattr(entity, entity.id_txt, id_generada)
+                entity.id = id_generada 
+            self.conexion.commit()
+              
             return True
         except oracledb.Error as error:
             return error
 
     def delete(self, entity):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"DELETE FROM {self.esquema}.{entity.get_name_class()} WHERE {entity.id_txt} = :id"
             values = [entity.id] 
@@ -47,7 +61,9 @@ class DAOgenericoOracle(DAOgen.DAOGenerico):
             return error
 
     def findall(self, entity):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.{entity.get_name_class()}"
             self.cursor.execute(sql)
@@ -61,7 +77,9 @@ class DAOgenericoOracle(DAOgen.DAOGenerico):
 
         
     def read(self, entity):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.{entity.get_name_class()} WHERE {entity.id_txt} = :val"
             values = {"val":entity.id}
@@ -89,7 +107,10 @@ class CONVOCATORIA_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_DAO):
 
 class CONVOCATORIA_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_DAO):
     def obtener_ultima(self):
-        self.conectar()
+        
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.CONVOCATORIA ORDER BY ID_CONVOCATORIA DESC"
             self.cursor.execute(sql)   
@@ -107,7 +128,9 @@ class CONVOCATORIA_TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_TIPO_D
 
 class TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_DAO):
     def tipos_x_convocatoria(self, id_convocatoria):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT t.* FROM {self.esquema}.TIPO t,{self.esquema}.CONVOCATORIA_TIPO ct WHERE ct.FK_ID_CONVOCATORIA = :id_convocatoria AND ct.FK_ID_TIPO = t.ID_TIPO"
             values = {"id_convocatoria": id_convocatoria}
@@ -122,7 +145,9 @@ class TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_DAO):
 
 class CONDICIONES_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONDICIONES_DAO):
     def condiciones_x_tipo(self, id_tipo):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.CONDICIONES WHERE FK_ID_TIPO = :id_tipo"
             values = {"id_tipo": id_tipo}
@@ -137,7 +162,9 @@ class CONDICIONES_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONDICIONES_DAO):
 
 class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
     def actualizar_estado_documento(self, id_solicitud, id_documento, estado):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"UPDATE {self.esquema}.DOCUMENTOS SET ESTADO = :estado WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
             values = {"estado" : estado, "id_documento" : id_documento, "id_solicitud" : id_solicitud}
@@ -148,7 +175,9 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
         
         
     def documentos_tipo_condicion_x_solicitud(self, id_solicitud):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO FROM {self.esquema}.DOCUMENTOS d
                         JOIN {self.esquema}.CONDICIONES c ON c.ID_CONDICION = d.FK_ID_CONDICION
@@ -164,7 +193,9 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
 
 class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
     def actualizar_estado(self, id_solicitud, estado):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"UPDATE {self.esquema}.SOLICITUDES SET ESTADO = :estado WHERE ID_SOLICITUD = :id_solicitud"
             values = {"estado" : estado, "id_solicitud" : id_solicitud}
@@ -174,7 +205,9 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
             return error  
 
     def solicitud_x_estu_x_conv(self, FK_CODIGO, FK_ID_CONVOCATORIA):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.SOLICITUDES WHERE FK_CODIGO = :FK_CODIGO AND FK_ID_CONVOCATORIA = :FK_ID_CONVOCATORIA"
             values = {"FK_CODIGO": FK_CODIGO,"FK_ID_CONVOCATORIA" : FK_ID_CONVOCATORIA}
@@ -189,13 +222,16 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
             return error
         
     def solicitud_x_convocatoria(self,FK_ID_CONVOCATORIA):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f'''SELECT s.ID_SOLICITUD, s.ESTADO, e.NOMBRES, e.APELLIDOS FROM {self.esquema}.SOLICITUDES s, 
                         {self.esquema}.ESTUDIANTES e
                         WHERE s.FK_ID_CONVOCATORIA = :FK_ID_CONVOCATORIA AND
                         e.CODIGO = s.FK_CODIGO
                         '''
+            print(sql, FK_ID_CONVOCATORIA)
             values = {"FK_ID_CONVOCATORIA" : FK_ID_CONVOCATORIA}
             self.cursor.execute(sql, values)   
             res = self.cursor.fetchall()
@@ -204,8 +240,21 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
             return error
 
 class ESTUDIANTES_DAO_ORACLE(DAOgenericoOracle, DAOgen.ESTUDIANTES_DAO):
+    
+    def actualizar_usuario(self, usuario, codigo):
+        try:
+            sql = f"UPDATE {self.esquema}.ESTUDIANTES SET USUARIO = :USUARIO WHERE CODIGO = :CODIGO"
+            values = {"USUARIO" : usuario, "CODIGO" : codigo}
+            self.cursor.execute(sql, values)   
+            self.conexion.commit()
+            return True
+        except oracledb.Error as error:
+            return error
+        
     def estudiante_x_usuario(self):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             sql = f"SELECT * FROM {self.esquema}.ESTUDIANTES WHERE USUARIO = :usuario"
             values = {"usuario" : current_app.config['ORACLE_USER']}
@@ -239,7 +288,9 @@ class ACTIVIDADES_DE_APOYO_DAO_ORACLE(DAOgenericoOracle, DAOgen.ACTIVIDADES_DE_A
 
 class DBA_USERS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DBA_USERS_DAO):
     def crear_usuario(self, usuario, contrasena):
-        self.conectar()
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
         try:
             # No se pasan bind variables debido al siguiente error: DPI-1059: bind variables are not supported in DDL statements
             sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE BRYDEF TEMPORARY TABLESPACE BRYTMP QUOTA 2M ON BRYDEF'''

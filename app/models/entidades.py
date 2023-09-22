@@ -125,10 +125,10 @@ class DOCUMENTOS(Entidad):
     def __init__(self, RUTA = '', ESTADO = '', PUNTAJE_OBTENIDO = 0 , FK_ID_CONDICION = None, FK_ID_SOLICITUD = None, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","id_txt"], 'ID_DOCUMENTO')
+            super().__init__(id,["no_attr","id","id_txt"], '')
             self.ID_DOCUMENTO = id
         else:
-            super().__init__(0,["no_attr","id","id_txt"], 'ID_DOCUMENTO')
+            super().__init__(0,["no_attr","id","id_txt"], '')
             self.ID_DOCUMENTO = id
         
         self.RUTA = RUTA

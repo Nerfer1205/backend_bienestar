@@ -70,6 +70,10 @@ class SOLICITUDES_DAO(DAOGenerico):
 
 class ESTUDIANTES_DAO(DAOGenerico):
     @abstractmethod
+    def actualizar_usuario(self, usuario, codigo):
+        pass
+    
+    @abstractmethod
     def estudiante_x_usuario(self):
         pass
 

@@ -20,9 +20,9 @@ class DAOGenerico(ABC):
     def read(self):
         pass
 
-    # @abstractmethod
-    # def update(self):
-    #     pass
+    @abstractmethod
+    def update(self):
+        pass
 
 class TIPO_SUBSIDIO_DAO(DAOGenerico):
     pass
@@ -40,6 +40,9 @@ class CONVOCATORIA_TIPO_DAO(DAOGenerico):
     pass
 
 class TIPO_DAO(DAOGenerico):
+    @abstractmethod
+    def recalcular_maximo_puntaje(self, id_tipo):
+        pass
     @abstractmethod
     def tipos_x_convocatoria(self, id_convocatoria):
         pass

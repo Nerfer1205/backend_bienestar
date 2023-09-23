@@ -29,9 +29,15 @@ class DAOgenericoOracle(DAOgen.DAOGenerico):
         try:
             columns, values = entity.get_attrs()
             columns_str = ", ".join(columns)
-            placeholders_str = ", ".join(":" + column for column in columns)
+            placeholder_list = []
+            for column in columns:
+                if 'FECHA' in column:
+                    placeholder_list.append(f"TO_DATE(:{column}, 'YYYY-MM-DD')")
+                else:
+                    placeholder_list.append(f":{column}")
+            placeholders_str = ", ".join(placeholder_list)
             sql = f"INSERT INTO {self.esquema}.{entity.get_name_class()} ({columns_str}) VALUES ({placeholders_str})"
-            print(sql, values)
+            
             self.cursor.execute(sql, values)
             if(entity.id_txt != ''):
                 sql = f"SELECT max({entity.id_txt}) FROM {self.esquema}.{entity.get_name_class()}"
@@ -95,6 +101,39 @@ class DAOgenericoOracle(DAOgen.DAOGenerico):
 
         except oracledb.Error as error:
             return error
+        
+    def update(self, entity, where = ''):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            columns, values = entity.get_attrs()
+
+            placeholder_list = []
+            n_values = []
+            for index_c,column in enumerate(columns):
+                if values[index_c] != '' and values[index_c] != None:
+                    if 'FECHA' in column:
+                        placeholder_list.append(f"{column} = TO_DATE(:{column}, 'YYYY-MM-DD')")
+                    else:
+                        placeholder_list.append(f"column = :{column}")
+                    n_values.append(values[index_c])
+            
+            set_clause = ", ".join(placeholder_list)
+            where_clause = where
+            if entity.id_txt != '':
+                where_clause = f'{entity.id_txt} = :{entity.id_txt}'
+
+            sql = f"UPDATE {self.esquema}.{entity.get_name_class()} SET {set_clause} WHERE {where_clause}"
+            query_values = [*n_values, entity.id]            
+            self.cursor.execute(sql, query_values)
+            self.conexion.commit()
+            if self.cursor.rowcount > 0:
+                return True
+            else:
+                return False
+        except oracledb.Error as error:
+            return error
 
 class TIPO_SUBSIDIO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_SUBSIDIO_DAO):
     pass
@@ -127,6 +166,20 @@ class CONVOCATORIA_TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_TIPO_D
     pass
 
 class TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_DAO):
+    def recalcular_maximo_puntaje(self, id_tipo):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            sql = f"UPDATE {self.esquema}.TIPO SET PUNTAJE_MAX = (SELECT MAX(PUNTAJE) FROM {self.esquema}.CONDICIONES WHERE FK_ID_TIPO = :id_tipo1) WHERE ID_TIPO = :id_tipo2"
+            values = {"id_tipo1": id_tipo, "id_tipo2": id_tipo}
+            self.cursor.execute(sql,values)   
+            self.conexion.commit()
+            return True
+        except oracledb.Error as error:
+            return error
+
+
     def tipos_x_convocatoria(self, id_convocatoria):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):

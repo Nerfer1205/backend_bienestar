@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, current_app
 from http import HTTPStatus
 from app.funciones.token_jwt import token_required
 from app.daos.DAOFactory import DAOFactoryOracle
-from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES, TIPO_SUBSIDIO, TIPO
+from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES, TIPO_SUBSIDIO, TIPO, CONVOCATORIA_TIPO_SUBSIDIO, CONVOCATORIA_TIPO, CONDICIONES
 from oracledb import Error
 import datetime
 
@@ -281,6 +281,172 @@ def obtener_variables():
     return jsonify({"success": True, "message" : "Tipos de subsidios consultados con éxito!", "data": {
         "VARIABLES" : variables_dict
     }}) , HTTPStatus.OK
+
+@convocatoria_bp.route('/nueva',methods=["POST"])
+@token_required
+def nueva_convocatoria():
+    json_recibido = request.get_json()
+
+    campos_validar = [
+        'ID_CONVOCATORIA',
+        'FECHA_I_CONV',
+        'FECHA_I_INSC',
+        'FECHA_I_VERIF',
+        'FECHA_I_PUBL',
+        'FECHA_I_CUMP',
+        'FECHA_F_CUMP',
+        'PERIODO',
+        'VALOR_X_ALMUERZO'
+    ]
+
+    for campo in campos_validar:
+        if campo not in json_recibido or len(str(json_recibido[campo]).strip()) == 0:
+            return jsonify({"success": False, "error" : f"Campo {campo} vacio"}), HTTPStatus.BAD_REQUEST
+
+    if 'TIPOS_SUBSIDIO' not in json_recibido or len(json_recibido['TIPOS_SUBSIDIO']) == 0:
+        return jsonify({"success": False, "error" : f"Campo TIPOS_SUBSIDIO vacio"}), HTTPStatus.BAD_REQUEST
+    
+    if 'VARIABLES' not in json_recibido or len(json_recibido['VARIABLES']) == 0:
+        return jsonify({"success": False, "error" : f"Campo VARIABLES vacio"}), HTTPStatus.BAD_REQUEST
+    
+    req_ID_CONVOCATORIA = json_recibido['ID_CONVOCATORIA']
+    req_FECHA_I_CONV = json_recibido['FECHA_I_CONV']
+    req_FECHA_I_INSC = json_recibido['FECHA_I_INSC']
+    req_FECHA_I_VERIF = json_recibido['FECHA_I_VERIF']
+    req_FECHA_I_PUBL = json_recibido['FECHA_I_PUBL']
+    req_FECHA_I_CUMP = json_recibido['FECHA_I_CUMP']
+    req_FECHA_F_CUMP = json_recibido['FECHA_F_CUMP']
+    req_PERIODO = json_recibido['PERIODO']
+    req_VALOR_X_ALMUERZO = json_recibido['VALOR_X_ALMUERZO']
+    req_TIPOS_SUBSIDIO = json_recibido['TIPOS_SUBSIDIO']
+    req_VARIABLES = json_recibido['VARIABLES']
+
+    tipos_subsidiosUsados = []
+    for item_TIPO_SUBSIDIO in req_TIPOS_SUBSIDIO:
+        if item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] == "NUEVA":            
+            campos_validar = [
+                'TIPO_SUBSIDIO_NOM',
+                'TIPO_SUBSIDIO_POR',
+                'TIPO_SUBSIDIO_HOR',
+            ]
+            for campo in campos_validar:
+                if campo not in item_TIPO_SUBSIDIO or len(str(item_TIPO_SUBSIDIO[campo]).strip()) == 0:
+                    return jsonify({"success": False, "error" : f"Campo {campo} vacio"}), HTTPStatus.BAD_REQUEST
+        else:
+            if item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] in tipos_subsidiosUsados:
+                return jsonify({"success": False, "error" : f"ID_TIPO_SUBSIDIO duplicado, enviá solo una un mismo tipo de subsidio"}), HTTPStatus.BAD_REQUEST
+            tipos_subsidiosUsados.append(item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"])
+        
+        if 'TIPO_SUBSIDIO_CUP' not in item_TIPO_SUBSIDIO or len(str(item_TIPO_SUBSIDIO['TIPO_SUBSIDIO_CUP']).strip()) == 0:
+            return jsonify({"success": False, "error" : f"Campo TIPO_SUBSIDIO_CUP vacio"}), HTTPStatus.BAD_REQUEST
+
+    variablesUsadas = []
+    for item_VARIABLES in req_VARIABLES:
+        if item_VARIABLES["ID_VARIABLE"] == "NUEVA":
+            campos_validar = [
+                'VARIABLE_NOM'
+            ]
+            for campo in campos_validar:
+                if campo not in item_VARIABLES or len(str(item_VARIABLES[campo]).strip()) == 0:
+                    return jsonify({"success": False, "error" : f"Campo {campo} vacio"}), HTTPStatus.BAD_REQUEST
+        else:
+            if item_VARIABLES["ID_VARIABLE"] in variablesUsadas:
+                return jsonify({"success": False, "error" : f"ID_VARIABLE duplicado, enviá solo una un mismo de variables"}), HTTPStatus.BAD_REQUEST
+            variablesUsadas.append(item_VARIABLES["ID_VARIABLE"])
+            
+        if 'VARIABLE_CONDICIONES' not in item_VARIABLES:
+            return jsonify({"success": False, "error" : f"Cada variable debe tener al menos una opción"}), HTTPStatus.BAD_REQUEST
+        
+        varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
+        for item_condicion in varCondiciones:
+            campos_validar = [
+                'CONDICION_NOM',
+                'CONDICION_PUN',
+            ]
+            for campo in campos_validar:
+                if campo not in item_condicion or len(str(item_condicion[campo]).strip()) == 0:
+                    return jsonify({"success": False, "error" : f"Campo {campo} vacio"}), HTTPStatus.BAD_REQUEST
+                
+            
+    #Creo Convocatoria
+    convocatoria = CONVOCATORIA(
+        FECHA_I_CONV = req_FECHA_I_CONV,
+        FECHA_I_INSC = req_FECHA_I_INSC,
+        FECHA_I_VERIF = req_FECHA_I_VERIF,
+        FECHA_I_PUBL = req_FECHA_I_PUBL,
+        FECHA_I_CUMP = req_FECHA_I_CUMP,
+        FECHA_F_CUMP = req_FECHA_F_CUMP,
+        PERIODO = req_PERIODO,
+        ESTADO= 'CREADA',
+        VALOR_X_ALMUERZO= req_VALOR_X_ALMUERZO,
+        id = req_ID_CONVOCATORIA 
+    )
+    creoConvocatoria = DAOFactoryOracle.get_convocatoria_dao().create(convocatoria)
+    if isinstance(creoConvocatoria, Error):
+        return jsonify({"success": False, "message" : str(creoConvocatoria)}) , HTTPStatus.BAD_REQUEST
+
+    for item_TIPO_SUBSIDIO in req_TIPOS_SUBSIDIO:
+        if item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] == "NUEVA":
+            tipo_subidio = TIPO_SUBSIDIO(
+                NOMBRE = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_NOM"],
+                POR_COBERTURA = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_POR"],
+                HRS_DEDICACION_X_SEM = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_HOR"],
+                id = "TS" + item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_NOM"][0:3]
+            )
+            creoTipoSubsidio = DAOFactoryOracle.get_convocatoria_dao().create(tipo_subidio)
+            if isinstance(creoTipoSubsidio, Error):
+                return jsonify({"success": False, "message" : str(creoTipoSubsidio)}) , HTTPStatus.BAD_REQUEST
+            
+            item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] = tipo_subidio.ID_TIPO_SUBSIDIO
+
+        nuevaRelTipoSubsidio = CONVOCATORIA_TIPO_SUBSIDIO(
+            FK_ID_CONVOCATORIA = convocatoria.ID_CONVOCATORIA,
+            FK_ID_TIPO_SUBSIDIO = item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"],
+            CANTIDAD = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_CUP"]
+        )
+        creoNuevaRelTipoSubisidio = DAOFactoryOracle.get_tipo_subsidio_dao().create(nuevaRelTipoSubsidio)
+        if isinstance(creoNuevaRelTipoSubisidio, Error):
+            return jsonify({"success": False, "message" : str(creoNuevaRelTipoSubisidio)}) , HTTPStatus.BAD_REQUEST
+
+    variablesUsadas = []
+    for item_VARIABLES in req_VARIABLES:
+        if item_VARIABLES["ID_VARIABLE"] == "NUEVA":
+            variable = TIPO(NOMBRE=item_VARIABLES["VARIABLE_NOM"], id="T"+item_VARIABLES["VARIABLE_NOM"][0:4])
+            creoVariable = DAOFactoryOracle.get_tipo_dao().create(variable)
+            if isinstance(creoVariable, Error):
+                return jsonify({"success": False, "message" : str(creoVariable)}) , HTTPStatus.BAD_REQUEST
+            item_VARIABLES["ID_VARIABLE"] = variable.ID_TIPO
+        
+        nuevaRelVariable = CONVOCATORIA_TIPO(
+            FK_ID_CONVOCATORIA = convocatoria.ID_CONVOCATORIA,
+            FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"]
+        )
+        creoNuevaRelVariable = DAOFactoryOracle.get_convocatoria_tipo_dao().create(nuevaRelVariable)
+        if isinstance(creoNuevaRelVariable, Error):
+            return jsonify({"success": False, "message" : str(creoNuevaRelVariable)}) , HTTPStatus.BAD_REQUEST
+
+        varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
+        for i_condicion,item_condicion in enumerate(varCondiciones):
+            condicion = CONDICIONES(
+                NOMBRE = item_condicion["CONDICION_NOM"],
+                PUNTAJE = item_condicion["CONDICION_PUN"],
+                FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"],
+                id = "CON"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
+            )
+            creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
+            if isinstance(creoCondicion, Error):
+                return jsonify({"success": False, "message" : str(creoCondicion)}) , HTTPStatus.BAD_REQUEST
+                  
+        recalculoMaximo = DAOFactoryOracle.get_tipo_dao().recalcular_maximo_puntaje(item_VARIABLES["ID_VARIABLE"])
+        if isinstance(recalculoMaximo, Error):
+            return jsonify({"success": False, "message" : str(recalculoMaximo)}) , HTTPStatus.BAD_REQUEST
+        
+
+    return jsonify({"success": True, "message" : "Convocatoria creada con éxito!"}) , HTTPStatus.OK
+
+    
+    
+    
 
 
 def verificar_datos_vacios_inscribirme(json_recibido):

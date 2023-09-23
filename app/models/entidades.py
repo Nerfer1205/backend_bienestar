@@ -36,10 +36,10 @@ class TIPO_SUBSIDIO(Entidad):
     def __init__(self, NOMBRE = '', POR_COBERTURA = '', HRS_DEDICACION_X_SEM = 0 , id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_TIPO_SUBSIDIO","id_txt"], 'ID_TIPO_SUBSIDIO')
+            super().__init__(id,["no_attr","id","id_txt"], '')
             self.ID_TIPO_SUBSIDIO = id
         else:
-            super().__init__(0,["no_attr","id","ID_TIPO_SUBSIDIO","id_txt"], 'ID_TIPO_SUBSIDIO')
+            super().__init__(0,["no_attr","id","id_txt"], '')
             self.ID_TIPO_SUBSIDIO = id
         
         self.NOMBRE = NOMBRE
@@ -48,18 +48,11 @@ class TIPO_SUBSIDIO(Entidad):
 
 #otra compuesta
 class CONVOCATORIA_TIPO_SUBSIDIO(Entidad):
-    def __init__(self, FK_ID_CONVOCATORIA = '', FK_ID_TIPO_SUBSIDIO = '', CANTIDAD = 0 , id = None ):
-        
-        if id is not None:
-            super().__init__(id,["no_attr","id","ID_TIPO_SUBSIDIO","id_txt"], 'ID_TIPO_SUBSIDIO')
-            self.ID_TIPO_SUBSIDIO = id
-        else:
-            super().__init__(0,["no_attr","id","ID_TIPO_SUBSIDIO","id_txt"], 'ID_TIPO_SUBSIDIO')
-            self.ID_TIPO_SUBSIDIO = id
-        
-        self.NOMBRE = NOMBRE
-        self.POR_COBERTURA = POR_COBERTURA
-        self.HRS_DEDICACION_X_SEM = HRS_DEDICACION_X_SEM
+    def __init__(self, FK_ID_CONVOCATORIA = '', FK_ID_TIPO_SUBSIDIO = '', CANTIDAD = 0):
+        super().__init__(0,["no_attr","id","id_txt"], '')
+        self.FK_ID_CONVOCATORIA = FK_ID_CONVOCATORIA
+        self.FK_ID_TIPO_SUBSIDIO = FK_ID_TIPO_SUBSIDIO
+        self.CANTIDAD = CANTIDAD
 
 
 
@@ -67,10 +60,10 @@ class CONVOCATORIA(Entidad):
     def __init__(self, FECHA_I_CONV = None, FECHA_I_INSC = None, FECHA_I_VERIF = None, FECHA_I_PUBL = None, FECHA_I_CUMP = None, FECHA_F_CUMP = None, PERIODO = '', ESTADO='', VALOR_X_ALMUERZO=0, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_CONVOCATORIA","id_txt"], 'ID_CONVOCATORIA')
+            super().__init__(id,["no_attr","id","id_txt"], '')
             self.ID_CONVOCATORIA = id
         else:
-            super().__init__(0,["no_attr","id","ID_CONVOCATORIA","id_txt"], 'ID_CONVOCATORIA')
+            super().__init__(0,["no_attr","id","id_txt"], '')
             self.ID_CONVOCATORIA = id
         self.FECHA_I_CONV = FECHA_I_CONV
         self.FECHA_I_INSC = FECHA_I_INSC
@@ -84,23 +77,20 @@ class CONVOCATORIA(Entidad):
 
 # no se q hacer con la compuesta
 class CONVOCATORIA_TIPO(Entidad):
-    def __init__(self, FK_ID_CONVOCATORIA = '', FK_ID_TIPO='', id = None ):
+    def __init__(self, FK_ID_CONVOCATORIA = '', FK_ID_TIPO=''):
+        super().__init__(0,["no_attr","id","id_txt"], '')
+        self.FK_ID_CONVOCATORIA = FK_ID_CONVOCATORIA
+        self.FK_ID_TIPO = FK_ID_TIPO
         
-        if id is not None:
-            super().__init__(id,["no_attr","id","ID_CONVOCATORIA","id_txt"], 'ID_CONVOCATORIA')
-            self.ID_CONVOCATORIA = id
-        else:
-            super().__init__(0,["no_attr","id","ID_CONVOCATORIA","id_txt"], 'ID_CONVOCATORIA')
-            self.ID_CONVOCATORIA = id
 
 class TIPO(Entidad):
     def __init__(self, NOMBRE = '', PUNTAJE_MAX=0, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_TIPO","id_txt"], 'ID_TIPO')
+            super().__init__(id,["no_attr","id","id_txt"], '')
             self.ID_TIPO = id
         else:
-            super().__init__(0,["no_attr","id","ID_TIPO","id_txt"], 'ID_TIPO')
+            super().__init__(0,["no_attr","id","id_txt"], '')
             self.ID_TIPO = id
         
         self.NOMBRE = NOMBRE
@@ -110,10 +100,10 @@ class CONDICIONES(Entidad):
     def __init__(self, NOMBRE = '', PUNTAJE=0, FK_ID_TIPO = '', id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","ID_CONDICION","id_txt"], 'ID_CONDICION')
+            super().__init__(id,["no_attr","id","id_txt"], '')
             self.ID_CONDICION = id
         else:
-            super().__init__(0,["no_attr","id","ID_CONDICION","id_txt"], 'ID_CONDICION')
+            super().__init__(0,["no_attr","id","id_txt"], '')
             self.ID_CONDICION = id
         
         self.NOMBRE = NOMBRE

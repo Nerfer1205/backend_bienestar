@@ -60,10 +60,10 @@ class CONVOCATORIA(Entidad):
     def __init__(self, FECHA_I_CONV = None, FECHA_I_INSC = None, FECHA_I_VERIF = None, FECHA_I_PUBL = None, FECHA_I_CUMP = None, FECHA_F_CUMP = None, PERIODO = '', ESTADO='', VALOR_X_ALMUERZO=0, id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","id_txt"], '')
+            super().__init__(id,["no_attr","id","id_txt"], 'ID_CONVOCATORIA')
             self.ID_CONVOCATORIA = id
         else:
-            super().__init__(0,["no_attr","id","id_txt"], '')
+            super().__init__(0,["no_attr","id","id_txt"], 'ID_CONVOCATORIA')
             self.ID_CONVOCATORIA = id
         self.FECHA_I_CONV = FECHA_I_CONV
         self.FECHA_I_INSC = FECHA_I_INSC

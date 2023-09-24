@@ -78,17 +78,17 @@ def inscribir_estudiante():
     convocatoria = CONVOCATORIA(id=id_convocatoria)
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "convocatoria", "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
 
     estudiante = DAOFactoryOracle.get_estudiantes_dao().estudiante_x_usuario()
     if isinstance(estudiante, Error):
-        return jsonify({"success": False, "message" : str(estudiante)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "estudiante", "message" : str(estudiante)}) , HTTPStatus.BAD_REQUEST
     if estudiante is None:
         return jsonify({"success": False, "message" : "No hay ningun estudiante relacionado a este usuario"}) , HTTPStatus.BAD_REQUEST
     
     solicitud = DAOFactoryOracle.get_solicitudes_dao().solicitud_x_estu_x_conv(estudiante.CODIGO, id_convocatoria)
     if isinstance(solicitud, Error):
-        return jsonify({"success": False, "message" : str(solicitud)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "solicitud", "message" : str(solicitud)}) , HTTPStatus.BAD_REQUEST
     if solicitud is not None:
         return jsonify({"success": False, "message" : "Ya existe una solicitud creada para este estudiante"}) , HTTPStatus.BAD_REQUEST
     
@@ -96,7 +96,7 @@ def inscribir_estudiante():
 
     tipos_x_convocatoria = DAOFactoryOracle.get_tipo_dao().tipos_x_convocatoria(id_convocatoria)
     if isinstance(tipos_x_convocatoria, Error):
-        return jsonify({"success": False, "message" : str(tipos_x_convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "tipos_x_convocatoria", "message" : str(tipos_x_convocatoria)}) , HTTPStatus.BAD_REQUEST
     
 
     
@@ -104,7 +104,7 @@ def inscribir_estudiante():
         nm_var = 'documento_' + str(tipo.ID_TIPO)
         nm_var_condicion = 'condicion_' + str(tipo.ID_TIPO)
         if nm_var_condicion not in request.form.keys():
-            return jsonify({"success": False, "message" : "No se envió la condicion para: " + tipo.NOMBRE}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False,  "message" : "No se envió la condicion para: " + tipo.NOMBRE}) , HTTPStatus.BAD_REQUEST
         if nm_var not in request.files:
             return jsonify({"success": False, "message" : "No se envió el documento: " + tipo.NOMBRE}) , HTTPStatus.BAD_REQUEST
         else:
@@ -115,7 +115,7 @@ def inscribir_estudiante():
     solicitud_c = SOLICITUDES(FK_CODIGO=estudiante.CODIGO, FK_ID_CONVOCATORIA=id_convocatoria)
     creoSolicitud = DAOFactoryOracle.get_solicitudes_dao().create(solicitud_c)
     if isinstance(creoSolicitud, Error):
-        return jsonify({"success": False, "message" : str(creoSolicitud)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False,"origen": "creoSolicitud", "message" : str(creoSolicitud)}) , HTTPStatus.BAD_REQUEST
 
     contador = 1
     for tipo in tipos_x_convocatoria:
@@ -136,7 +136,7 @@ def inscribir_estudiante():
                 )
                 creoDocumento = DAOFactoryOracle.get_documentos_dao().create(documento_bd)
                 if isinstance(creoDocumento, Error):
-                    return jsonify({"success": False, "message" : str(creoDocumento)}) , HTTPStatus.BAD_REQUEST
+                    return jsonify({"success": False,"origen": "creoDocumento" , "message" : str(creoDocumento)}) , HTTPStatus.BAD_REQUEST
 
         contador+=1
     return jsonify({"success": True, "message" : "Solicitud agregada con éxito!"}) , HTTPStatus.OK

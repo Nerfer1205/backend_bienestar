@@ -59,6 +59,9 @@ def registro():
     if estudiante is None:
         return jsonify({"success": False, "message" : "Estudiante no encontrado"}) , HTTPStatus.BAD_REQUEST
     
+    if estudiante.USUARIO is not None and estudiante.USUARIO != '':
+        return jsonify({"success": False, "message" : "El estudiante ya tiene un usuario asignado"}) , HTTPStatus.BAD_REQUEST
+
     usuarioFueCreado = DAOFactoryOracle.get_usuario_dao().crear_usuario(req_usuario, req_contrasena)
     if isinstance(usuarioFueCreado, Error):
         return jsonify({"success": False, "message" : str(usuarioFueCreado)}) , HTTPStatus.BAD_REQUEST

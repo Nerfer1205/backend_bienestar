@@ -32,7 +32,7 @@ class CONVOCATORIA_TIPO_SUBSIDIO_DAO(DAOGenerico):
 
 class CONVOCATORIA_DAO(DAOGenerico):
     @abstractmethod
-    def obtener_ultima(self):
+    def obtener_ultima(self, estado):
         pass
 
 
@@ -56,7 +56,7 @@ class DOCUMENTOS_DAO(DAOGenerico):
         pass
 
     @abstractmethod
-    def actualizar_estado_documento(self, id_solicitud, id_documento, estado):
+    def actualizar_estado_documento(self, id_solicitud, id_documento, estado, puntaje):
         pass
     
 

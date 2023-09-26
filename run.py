@@ -12,7 +12,9 @@ app.config.from_object(DevelopmentConfig())
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(convocatoria_bp, url_prefix='/convocatoria')
-
+@app.route("/")
+def inicio():
+    return 'ab'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000)

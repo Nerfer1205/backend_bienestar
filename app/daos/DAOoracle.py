@@ -145,14 +145,15 @@ class CONVOCATORIA_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_DAO):
     pass
 
 class CONVOCATORIA_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_DAO):
-    def obtener_ultima(self):
+    def obtener_ultima(self, estado):
         
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"SELECT * FROM {self.esquema}.CONVOCATORIA ORDER BY ID_CONVOCATORIA DESC"
-            self.cursor.execute(sql)   
+            sql = f"SELECT * FROM {self.esquema}.CONVOCATORIA WHERE ESTADO = :estado ORDER BY ID_CONVOCATORIA DESC"
+            values = {"estado": estado}
+            self.cursor.execute(sql,values)   
             res = self.cursor.fetchone()
             if res is None:
                 return None
@@ -214,13 +215,13 @@ class CONDICIONES_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONDICIONES_DAO):
             return error
 
 class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
-    def actualizar_estado_documento(self, id_solicitud, id_documento, estado):
+    def actualizar_estado_documento(self, id_solicitud, id_documento, estado, puntaje):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"UPDATE {self.esquema}.DOCUMENTOS SET ESTADO = :estado WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
-            values = {"estado" : estado, "id_documento" : id_documento, "id_solicitud" : id_solicitud}
+            sql = f"UPDATE {self.esquema}.DOCUMENTOS SET ESTADO = :estado, PUNTAJE_OBTENIDO = :puntaje WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
+            values = {"estado" : estado, "puntaje":puntaje, "id_documento" : id_documento, "id_solicitud" : id_solicitud, }
             self.cursor.execute(sql, values)   
             return True
         except oracledb.Error as error:
@@ -232,7 +233,7 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO FROM {self.esquema}.DOCUMENTOS d
+            sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO, c.PUNTAJE FROM {self.esquema}.DOCUMENTOS d
                         JOIN {self.esquema}.CONDICIONES c ON c.ID_CONDICION = d.FK_ID_CONDICION
                         JOIN {self.esquema}.TIPO t ON t.ID_TIPO = c.FK_ID_TIPO
                         WHERE d.FK_ID_SOLICITUD = :FK_ID_SOLICITUD
@@ -245,13 +246,13 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
             return error        
 
 class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
-    def actualizar_estado(self, id_solicitud, estado):
+    def actualizar_estado(self, id_solicitud, estado, motivo = None):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"UPDATE {self.esquema}.SOLICITUDES SET ESTADO = :estado WHERE ID_SOLICITUD = :id_solicitud"
-            values = {"estado" : estado, "id_solicitud" : id_solicitud}
+            sql = f"UPDATE {self.esquema}.SOLICITUDES SET ESTADO = :estado, MOTIVO_RECHAZO = :motivo WHERE ID_SOLICITUD = :id_solicitud"
+            values = {"estado" : estado, "motivo" : motivo,"id_solicitud" : id_solicitud}
             self.cursor.execute(sql, values)   
             return True
         except oracledb.Error as error:

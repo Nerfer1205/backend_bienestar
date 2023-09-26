@@ -17,9 +17,9 @@ convocatoria_bp = Blueprint('convocatoria', __name__)
 @convocatoria_bp.route('/ver-ultima/',methods=["GET"])
 @token_required
 def ver_ultima():
-    convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima()
+    convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima('INSCRIPCION')
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
     if convocatoria is None:
         return jsonify({"success": False, "message" : "Aun no existen convocatorias"}) , HTTPStatus.BAD_REQUEST
     
@@ -38,19 +38,19 @@ def ver_para_estudiante(id_convocatoria):
     convocatoria = CONVOCATORIA(id=id_convocatoria)
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
     
     
     tipos_x_convocatoria = DAOFactoryOracle.get_tipo_dao().tipos_x_convocatoria(id_convocatoria)
     if isinstance(tipos_x_convocatoria, Error):
-        return jsonify({"success": False, "message" : str(tipos_x_convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(tipos_x_convocatoria), "origen": "tipos_x_convocatoria"}) , HTTPStatus.BAD_REQUEST
     
     data = {"CONVOCATORIA" : {"ID_CONVOCATORIA": convocatoria.ID_CONVOCATORIA, "TIPOS": []}}
     for tipo in tipos_x_convocatoria:
         temp_condiciones = []        
         condiciones_x_tipo = DAOFactoryOracle.get_condiciones_dao().condiciones_x_tipo(tipo.ID_TIPO)
         if isinstance(condiciones_x_tipo, Error):
-            return jsonify({"success": False, "message" : str(condiciones_x_tipo)}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False, "message" : str(condiciones_x_tipo), "origen": "condiciones_x_tipo"}) , HTTPStatus.BAD_REQUEST
         for condicion in condiciones_x_tipo:
             temp_condiciones.append({
                 "ID_CONDICION": condicion.ID_CONDICION,
@@ -144,15 +144,15 @@ def inscribir_estudiante():
 @convocatoria_bp.route('/ver-solicitudes-ultima-conv',methods=["GET"])
 @token_required
 def ver_solicitudes_ultima_conv():
-    convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima()
+    convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima('VERIFICACION_DOC')
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
     if convocatoria is None:
         return jsonify({"success": False, "message" : "Aun no existen convocatorias"}) , HTTPStatus.BAD_REQUEST
     
     consultaSolicitudes = DAOFactoryOracle.get_solicitudes_dao().solicitud_x_convocatoria(convocatoria.ID_CONVOCATORIA)
     if isinstance(consultaSolicitudes, Error):
-        return jsonify({"success": False, "message" : str(consultaSolicitudes)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(consultaSolicitudes), "origen": "consultaSolicitudes"}) , HTTPStatus.BAD_REQUEST
 
     solicitudes_dict = [{"ID_SOLICITUD": respSol[0],
                          "ESTADO_SOLICITUD": respSol[1],
@@ -175,19 +175,19 @@ def ver_solicitudes_ultima_conv():
 def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(CONVOCATORIA(id=id_convocatoria))
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
     if convocatoria is None:
         return jsonify({"success": False, "message" : "Convocatoria no encontrada"}) , HTTPStatus.BAD_REQUEST
     
     solicitud = DAOFactoryOracle.get_solicitudes_dao().read(SOLICITUDES(id=id_solicitud))
     if isinstance(solicitud, Error):
-        return jsonify({"success": False, "message" : str(solicitud)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(solicitud), "origen": "solicitud"}) , HTTPStatus.BAD_REQUEST
     if solicitud is None:
         return jsonify({"success": False, "message" : "Solicitud no encontrada"}) , HTTPStatus.BAD_REQUEST
     
     consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_solicitud)
     if isinstance(consultaDocumentos, Error):
-        return jsonify({"success": False, "message" : str(consultaDocumentos)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
 
     documentos_dict = [{ "NOMBRE_TIPO": respDoc[0],
                          "NOMBRE_CONVOCATORIA": respDoc[1],
@@ -215,33 +215,39 @@ def actualizar_documentos():
     convocatoria = CONVOCATORIA(id=id_convocatoria)
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
-        return jsonify({"success": False, "message" : str(convocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
 
     solicitud = SOLICITUDES(id=id_solicitud)
     solicitud = DAOFactoryOracle.get_solicitudes_dao().read(solicitud)
     if isinstance(solicitud, Error):
-        return jsonify({"success": False, "message" : str(solicitud)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(solicitud), "origen": "solicitud"}) , HTTPStatus.BAD_REQUEST
     if solicitud is None:
         return jsonify({"success": False, "message" : "Solicitud no encontrada"}) , HTTPStatus.BAD_REQUEST
     
     consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_solicitud)
     if isinstance(consultaDocumentos, Error):
-        return jsonify({"success": False, "message" : str(consultaDocumentos)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
         if nm_var_documento not in request.form.keys():
             return jsonify({"success": False, "message" : "No se envió la verificación para el documento con ID: " + respDoc[4]}) , HTTPStatus.BAD_REQUEST
 
+    estadoSolicitud = 'VERIFICADA'
+    motivoRechazo = None
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
         documento_estado = request.form.get(nm_var_documento)
-        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado)
+        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, respDoc[5])
         if isinstance(actualizoDocumento, Error):
-            return jsonify({"success": False, "message" : str(actualizoDocumento)}) , HTTPStatus.BAD_REQUEST
-        
-    actualizoSolicitud = DAOFactoryOracle.get_solicitudes_dao().actualizar_estado(id_solicitud, 'VERIFICADA')
+            return jsonify({"success": False, "message" : str(actualizoDocumento), "origen": "actualizoDocumento"}) , HTTPStatus.BAD_REQUEST
+        if documento_estado == "RECHAZADO":
+            estadoSolicitud = 'RECHAZADA'
+            motivoRechazo = "Documento(s) invalido(s)"
+
+    actualizoSolicitud = DAOFactoryOracle.get_solicitudes_dao().actualizar_estado(id_solicitud, estadoSolicitud, motivoRechazo)
+    
     if isinstance(actualizoSolicitud, Error):
-        return jsonify({"success": False, "message" : str(actualizoSolicitud)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(actualizoSolicitud), "origen": "actualizoSolicitud"}) , HTTPStatus.BAD_REQUEST
 
     return jsonify({"success": True, "message" : "Estado de los documentos actualizados con éxito!"}) , HTTPStatus.OK
 
@@ -250,8 +256,8 @@ def actualizar_documentos():
 def obtener_tipos_subsidios():
     tipos_subsidios = DAOFactoryOracle.get_tipo_subsidio_dao().findall(TIPO_SUBSIDIO())
     if isinstance(tipos_subsidios, Error):
-        return jsonify({"success": False, "message" : str(tipos_subsidios)}) , HTTPStatus.BAD_REQUEST
-    print(tipos_subsidios)
+        return jsonify({"success": False, "message" : str(tipos_subsidios), "origen": "tipos_subsidios"}) , HTTPStatus.BAD_REQUEST
+    
 
     tipos_subsidios_dict = [{"ID_TIPO_SUBSIDIO": tip.ID_TIPO_SUBSIDIO,
                          "NOMBRE": tip.NOMBRE,
@@ -268,13 +274,13 @@ def obtener_tipos_subsidios():
 def obtener_variables():
     variables = DAOFactoryOracle.get_tipo_subsidio_dao().findall(TIPO())
     if isinstance(variables, Error):
-        return jsonify({"success": False, "message" : str(variables)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(variables), "origen": "variables"}) , HTTPStatus.BAD_REQUEST
     
     variables_dict = []
     for variable in variables:        
         condiciones = DAOFactoryOracle.get_condiciones_dao().condiciones_x_tipo(variable.ID_TIPO)
         if isinstance(condiciones, Error):
-            return jsonify({"success": False, "message" : str(condiciones)}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False, "message" : str(condiciones), "origen": "condiciones"}) , HTTPStatus.BAD_REQUEST
         condiciones_dict = [{"ID_CONDICION": condicion.ID_CONDICION, "NOMBRE": condicion.NOMBRE} for condicion in condiciones]
         variables_dict.append({"ID_TIPO":variable.ID_TIPO, "NOMBRE": variable.NOMBRE, "PUNTAJE_MAX":variable.PUNTAJE_MAX, "CONDICIONES" : condiciones_dict }) 
     
@@ -377,13 +383,13 @@ def nueva_convocatoria():
         FECHA_I_CUMP = req_FECHA_I_CUMP,
         FECHA_F_CUMP = req_FECHA_F_CUMP,
         PERIODO = req_PERIODO,
-        ESTADO= 'CREADA',
+        ESTADO= 'SIN INICIAR',
         VALOR_X_ALMUERZO= req_VALOR_X_ALMUERZO,
         id = req_ID_CONVOCATORIA 
     )
     creoConvocatoria = DAOFactoryOracle.get_convocatoria_dao().create(convocatoria)
     if isinstance(creoConvocatoria, Error):
-        return jsonify({"success": False, "message" : str(creoConvocatoria)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : str(creoConvocatoria), "origen": "creoConvocatoria"}) , HTTPStatus.BAD_REQUEST
 
     for item_TIPO_SUBSIDIO in req_TIPOS_SUBSIDIO:
         if item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] == "NUEVA":
@@ -395,7 +401,7 @@ def nueva_convocatoria():
             )
             creoTipoSubsidio = DAOFactoryOracle.get_convocatoria_dao().create(tipo_subidio)
             if isinstance(creoTipoSubsidio, Error):
-                return jsonify({"success": False, "message" : str(creoTipoSubsidio)}) , HTTPStatus.BAD_REQUEST
+                return jsonify({"success": False, "message" : str(creoTipoSubsidio), "origen": "creoTipoSubsidio"}) , HTTPStatus.BAD_REQUEST
             
             item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] = tipo_subidio.ID_TIPO_SUBSIDIO
 
@@ -406,7 +412,7 @@ def nueva_convocatoria():
         )
         creoNuevaRelTipoSubisidio = DAOFactoryOracle.get_tipo_subsidio_dao().create(nuevaRelTipoSubsidio)
         if isinstance(creoNuevaRelTipoSubisidio, Error):
-            return jsonify({"success": False, "message" : str(creoNuevaRelTipoSubisidio)}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False, "message" : str(creoNuevaRelTipoSubisidio), "origen": "creoNuevaRelTipoSubisidio"}) , HTTPStatus.BAD_REQUEST
 
     variablesUsadas = []
     for item_VARIABLES in req_VARIABLES:
@@ -414,7 +420,7 @@ def nueva_convocatoria():
             variable = TIPO(NOMBRE=item_VARIABLES["VARIABLE_NOM"], id="T"+item_VARIABLES["VARIABLE_NOM"][0:4])
             creoVariable = DAOFactoryOracle.get_tipo_dao().create(variable)
             if isinstance(creoVariable, Error):
-                return jsonify({"success": False, "message" : str(creoVariable)}) , HTTPStatus.BAD_REQUEST
+                return jsonify({"success": False, "message" : str(creoVariable), "origen": "creoVariable"}) , HTTPStatus.BAD_REQUEST
             item_VARIABLES["ID_VARIABLE"] = variable.ID_TIPO
         
         nuevaRelVariable = CONVOCATORIA_TIPO(
@@ -423,7 +429,7 @@ def nueva_convocatoria():
         )
         creoNuevaRelVariable = DAOFactoryOracle.get_convocatoria_tipo_dao().create(nuevaRelVariable)
         if isinstance(creoNuevaRelVariable, Error):
-            return jsonify({"success": False, "message" : str(creoNuevaRelVariable)}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False, "message" : str(creoNuevaRelVariable), "origen": "creoNuevaRelVariable"}) , HTTPStatus.BAD_REQUEST
 
         varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
         for i_condicion,item_condicion in enumerate(varCondiciones):
@@ -435,11 +441,11 @@ def nueva_convocatoria():
             )
             creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
             if isinstance(creoCondicion, Error):
-                return jsonify({"success": False, "message" : str(creoCondicion)}) , HTTPStatus.BAD_REQUEST
+                return jsonify({"success": False, "message" : str(creoCondicion), "origen": "creoCondicion"}) , HTTPStatus.BAD_REQUEST
                   
         recalculoMaximo = DAOFactoryOracle.get_tipo_dao().recalcular_maximo_puntaje(item_VARIABLES["ID_VARIABLE"])
         if isinstance(recalculoMaximo, Error):
-            return jsonify({"success": False, "message" : str(recalculoMaximo)}) , HTTPStatus.BAD_REQUEST
+            return jsonify({"success": False, "message" : str(recalculoMaximo), "origen": "recalculoMaximo"}) , HTTPStatus.BAD_REQUEST
         
 
     return jsonify({"success": True, "message" : "Convocatoria creada con éxito!"}) , HTTPStatus.OK

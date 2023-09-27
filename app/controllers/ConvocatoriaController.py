@@ -185,7 +185,7 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
     if solicitud is None:
         return jsonify({"success": False, "message" : "Solicitud no encontrada"}) , HTTPStatus.BAD_REQUEST
     
-    consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_solicitud)
+    consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_convocatoria, id_solicitud)
     if isinstance(consultaDocumentos, Error):
         return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
 

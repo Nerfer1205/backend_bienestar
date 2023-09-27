@@ -228,7 +228,7 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
             return error  
         
         
-    def documentos_tipo_condicion_x_solicitud(self, id_solicitud):
+    def documentos_tipo_condicion_x_solicitud(self,id_convocatoria, id_solicitud):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
@@ -236,9 +236,11 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
             sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO, c.PUNTAJE FROM {self.esquema}.DOCUMENTOS d
                         JOIN {self.esquema}.CONDICIONES c ON c.ID_CONDICION = d.FK_ID_CONDICION
                         JOIN {self.esquema}.TIPO t ON t.ID_TIPO = c.FK_ID_TIPO
-                        WHERE d.FK_ID_SOLICITUD = :FK_ID_SOLICITUD
+                        JOIN {self.esquema}.SOLICITUDES s ON s.ID_SOLICITUD = d.FK_ID_SOLICITUD
+                        WHERE d.FK_ID_SOLICITUD = :FK_ID_SOLICITUD and
+                        s.FK_ID_CONVOCATORIA = :id_convocatoria
                         '''
-            values = {"FK_ID_SOLICITUD" : id_solicitud}
+            values = {"FK_ID_SOLICITUD" : id_solicitud, "id_convocatoria" : id_convocatoria}
             self.cursor.execute(sql, values)   
             res = self.cursor.fetchall()
             return res

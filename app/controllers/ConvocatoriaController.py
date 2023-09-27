@@ -204,8 +204,6 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
 @token_required
 def actualizar_documentos():
     json_recibido = request.get_json()
-    if 'usuario' not in json_recibido or len(json_recibido['usuario'].strip()) == 0:
-        return jsonify({"success": False, "error" : "Campo usuario vacio"})
     if 'id_convocatoria' not in json_recibido or len(json_recibido['id_convocatoria'].strip()) == 0:
         return jsonify({"success": False, "error" : "Campo id convocatoria vacio"}), HTTPStatus.BAD_REQUEST
     

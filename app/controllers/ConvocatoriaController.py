@@ -224,7 +224,7 @@ def actualizar_documentos():
     if solicitud is None:
         return jsonify({"success": False, "message" : "Solicitud no encontrada"}) , HTTPStatus.BAD_REQUEST
     
-    consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_solicitud)
+    consultaDocumentos = DAOFactoryOracle.get_documentos_dao().documentos_tipo_condicion_x_solicitud(id_convocatoria,id_solicitud)
     if isinstance(consultaDocumentos, Error):
         return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
     for respDoc in consultaDocumentos:
@@ -237,12 +237,16 @@ def actualizar_documentos():
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
         documento_estado = request.form.get(nm_var_documento)
-        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, respDoc[5])
-        if isinstance(actualizoDocumento, Error):
-            return jsonify({"success": False, "message" : str(actualizoDocumento), "origen": "actualizoDocumento"}) , HTTPStatus.BAD_REQUEST
+        puntaje_obtenido = respDoc[5]
         if documento_estado == "RECHAZADO":
             estadoSolicitud = 'RECHAZADA'
             motivoRechazo = "Documento(s) invalido(s)"
+            puntaje_obtenido = 0
+
+        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, puntaje_obtenido)
+        if isinstance(actualizoDocumento, Error):
+            return jsonify({"success": False, "message" : str(actualizoDocumento), "origen": "actualizoDocumento"}) , HTTPStatus.BAD_REQUEST
+        
 
     actualizoSolicitud = DAOFactoryOracle.get_solicitudes_dao().actualizar_estado(id_solicitud, estadoSolicitud, motivoRechazo)
     

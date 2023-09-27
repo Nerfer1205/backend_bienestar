@@ -203,15 +203,17 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
 @convocatoria_bp.route('/actualizar-documentos',methods=["POST"])
 @token_required
 def actualizar_documentos():
-
-    if 'id_convocatoria' not in request.form or len(request.form.get('id_convocatoria').strip()) == 0:
+    json_recibido = request.get_json()
+    if 'usuario' not in json_recibido or len(json_recibido['usuario'].strip()) == 0:
+        return jsonify({"success": False, "error" : "Campo usuario vacio"})
+    if 'id_convocatoria' not in json_recibido or len(json_recibido['id_convocatoria'].strip()) == 0:
         return jsonify({"success": False, "error" : "Campo id convocatoria vacio"}), HTTPStatus.BAD_REQUEST
     
-    if 'id_solicitud' not in request.form or len(request.form.get('id_solicitud').strip()) == 0:
+    if 'id_solicitud' not in json_recibido or len(json_recibido['id_solicitud'].strip()) == 0:
         return jsonify({"success": False, "error" : "Campo id solicitud vacio"}), HTTPStatus.BAD_REQUEST
     
-    id_convocatoria = request.form.get('id_convocatoria')
-    id_solicitud = request.form.get('id_solicitud')
+    id_convocatoria = json_recibido['id_convocatoria']
+    id_solicitud = json_recibido['id_solicitud']
     convocatoria = CONVOCATORIA(id=id_convocatoria)
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
@@ -229,14 +231,14 @@ def actualizar_documentos():
         return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
-        if nm_var_documento not in request.form.keys():
+        if nm_var_documento not in json_recibido:
             return jsonify({"success": False, "message" : "No se envió la verificación para el documento con ID: " + respDoc[4]}) , HTTPStatus.BAD_REQUEST
 
     estadoSolicitud = 'VERIFICADA'
     motivoRechazo = None
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
-        documento_estado = request.form.get(nm_var_documento)
+        documento_estado = json_recibido[nm_var_documento]
         puntaje_obtenido = respDoc[5]
         if documento_estado == "RECHAZADO":
             estadoSolicitud = 'RECHAZADA'

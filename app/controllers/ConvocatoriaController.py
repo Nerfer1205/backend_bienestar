@@ -190,7 +190,7 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
         return jsonify({"success": False, "message" : str(consultaDocumentos), "origen": "consultaDocumentos"}) , HTTPStatus.BAD_REQUEST
 
     documentos_dict = [{ "NOMBRE_TIPO": respDoc[0],
-                         "NOMBRE_CONVOCATORIA": respDoc[1],
+                         "NOMBRE_CONDICION": respDoc[1],
                          "ESTADO_DOC": respDoc[2],
                          "RUTA_DOC": ruta+respDoc[3],
                          "ID_DOC": respDoc[4]

@@ -223,6 +223,7 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
             sql = f"UPDATE {self.esquema}.DOCUMENTOS SET ESTADO = :estado, PUNTAJE_OBTENIDO = :puntaje WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
             values = {"estado" : estado, "puntaje":puntaje, "id_documento" : id_documento, "id_solicitud" : id_solicitud, }
             self.cursor.execute(sql, values)   
+            self.conexion.commit()
             return True
         except oracledb.Error as error:
             return error  
@@ -255,7 +256,8 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
         try:
             sql = f"UPDATE {self.esquema}.SOLICITUDES SET ESTADO = :estado, MOTIVO_RECHAZO = :motivo WHERE ID_SOLICITUD = :id_solicitud"
             values = {"estado" : estado, "motivo" : motivo,"id_solicitud" : id_solicitud}
-            self.cursor.execute(sql, values)   
+            self.cursor.execute(sql, values)  
+            self.conexion.commit() 
             return True
         except oracledb.Error as error:
             return error  

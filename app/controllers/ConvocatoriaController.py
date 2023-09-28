@@ -14,7 +14,7 @@ ruta = 'http://127.0.0.1:5000/static/uploads/'
 
 convocatoria_bp = Blueprint('convocatoria', __name__)
 
-@convocatoria_bp.route('/ver-ultima/',methods=["GET"])
+@convocatoria_bp.route('/ver-ultima',methods=["GET"])
 @token_required
 def ver_ultima():
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima('INSCRIPCION')
@@ -130,7 +130,7 @@ def inscribir_estudiante():
                 documento_bd = DOCUMENTOS(
                     id=contador,
                     RUTA=documento_ruta,
-                    ESTADO='POR REVISAR',
+                    ESTADO='POR_REVISAR',
                     FK_ID_CONDICION=documento_condicion,
                     FK_ID_SOLICITUD=solicitud_c.ID_SOLICITUD
                 )

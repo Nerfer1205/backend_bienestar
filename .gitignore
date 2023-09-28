@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 static/uploads/
-configuration.py
+config/configuration.py
 # C extensions
 *.so
 

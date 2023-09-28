@@ -9,13 +9,6 @@ import jwt
 
 auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/', methods=['POST'])
-def prueba():
-    print(current_app.config['ORACLE_USER'])
-    current_app.config['ORACLE_USER'] = "PEPITO"
-    print(current_app.config['ORACLE_USER'])
-    return ''
-
 
 @auth_bp.route('/login', methods=['POST'])
 def login():

@@ -434,16 +434,16 @@ def nueva_convocatoria():
             return jsonify({"success": False, "message" : str(creoNuevaRelVariable), "origen": "creoNuevaRelVariable"}) , HTTPStatus.BAD_REQUEST
 
         varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
-        for i_condicion,item_condicion in enumerate(varCondiciones):
-            condicion = CONDICIONES(
-                NOMBRE = item_condicion["CONDICION_NOM"],
-                PUNTAJE = item_condicion["CONDICION_PUN"],
-                FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"],
-                id = "C"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
-            )
-            creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
-            if isinstance(creoCondicion, Error):
-                return jsonify({"success": False, "message" : str(creoCondicion), "origen": "creoCondicion"}) , HTTPStatus.BAD_REQUEST
+        # for i_condicion,item_condicion in enumerate(varCondiciones):
+            # condicion = CONDICIONES(
+            #     NOMBRE = item_condicion["CONDICION_NOM"],
+            #     PUNTAJE = item_condicion["CONDICION_PUN"],
+            #     FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"],
+            #     id = "C"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
+            # )
+            # creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
+            # if isinstance(creoCondicion, Error):
+            #     return jsonify({"success": False, "message" : str(creoCondicion), "origen": "creoCondicion"}) , HTTPStatus.BAD_REQUEST
                   
         recalculoMaximo = DAOFactoryOracle.get_tipo_dao().recalcular_maximo_puntaje(item_VARIABLES["ID_VARIABLE"])
         if isinstance(recalculoMaximo, Error):

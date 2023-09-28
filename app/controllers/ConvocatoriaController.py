@@ -364,8 +364,6 @@ def nueva_convocatoria():
                 return jsonify({"success": False, "error" : f"ID_VARIABLE duplicado, enviá solo una un mismo de variables"}), HTTPStatus.BAD_REQUEST
             variablesUsadas.append(item_VARIABLES["ID_VARIABLE"])
             
-        if 'VARIABLE_CONDICIONES' not in item_VARIABLES:
-            return jsonify({"success": False, "error" : f"Cada variable debe tener al menos una opción"}), HTTPStatus.BAD_REQUEST
         
         varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
         for item_condicion in varCondiciones:

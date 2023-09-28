@@ -1,6 +1,6 @@
 import os
 from werkzeug.utils import secure_filename
-
+import uuid
 from flask import Blueprint, request, jsonify, current_app
 from http import HTTPStatus
 from app.funciones.token_jwt import token_required
@@ -394,10 +394,14 @@ def nueva_convocatoria():
 
     for item_TIPO_SUBSIDIO in req_TIPOS_SUBSIDIO:
         if item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] == "NUEVA":
+
+            idTipoSub = str(uuid.uuid4())
+
             tipo_subidio = TIPO_SUBSIDIO(
                 NOMBRE = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_NOM"],
                 POR_COBERTURA = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_POR"],
-                HRS_DEDICACION_X_SEM = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_HOR"]
+                HRS_DEDICACION_X_SEM = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_HOR"],
+                id="T" + idTipoSub[0:4]
             )
             creoTipoSubsidio = DAOFactoryOracle.get_convocatoria_dao().create(tipo_subidio)
             if isinstance(creoTipoSubsidio, Error):
@@ -417,7 +421,7 @@ def nueva_convocatoria():
     variablesUsadas = []
     for item_VARIABLES in req_VARIABLES:
         if item_VARIABLES["ID_VARIABLE"] == "NUEVA":
-            variable = TIPO(NOMBRE=item_VARIABLES["VARIABLE_NOM"], id="T"+item_VARIABLES["VARIABLE_NOM"][0:4])
+            variable = TIPO(NOMBRE=item_VARIABLES["VARIABLE_NOM"])
             creoVariable = DAOFactoryOracle.get_tipo_dao().create(variable)
             if isinstance(creoVariable, Error):
                 return jsonify({"success": False, "message" : str(creoVariable), "origen": "creoVariable"}) , HTTPStatus.BAD_REQUEST

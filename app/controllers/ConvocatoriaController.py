@@ -441,7 +441,7 @@ def nueva_convocatoria():
                 NOMBRE = item_condicion["CONDICION_NOM"],
                 PUNTAJE = item_condicion["CONDICION_PUN"],
                 FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"],
-                id = "CON"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
+                id = "C"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
             )
             creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
             if isinstance(creoCondicion, Error):

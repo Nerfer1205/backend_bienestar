@@ -36,10 +36,10 @@ class TIPO_SUBSIDIO(Entidad):
     def __init__(self, NOMBRE = '', POR_COBERTURA = '', HRS_DEDICACION_X_SEM = 0 , id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","id_txt"], '')
+            super().__init__(id,["no_attr","ID_TIPO_SUBSIDIO","id","id_txt"], 'ID_TIPO_SUBSIDIO')
             self.ID_TIPO_SUBSIDIO = id
         else:
-            super().__init__(0,["no_attr","id","id_txt"], '')
+            super().__init__(0,["no_attr","ID_TIPO_SUBSIDIO","id","id_txt"], 'ID_TIPO_SUBSIDIO')
             self.ID_TIPO_SUBSIDIO = id
         
         self.NOMBRE = NOMBRE
@@ -100,10 +100,10 @@ class CONDICIONES(Entidad):
     def __init__(self, NOMBRE = '', PUNTAJE=0, FK_ID_TIPO = '', id = None ):
         
         if id is not None:
-            super().__init__(id,["no_attr","id","id_txt"], '')
+            super().__init__(id,["no_attr","ID_CONDICION","id","id_txt"], 'ID_CONDICION')
             self.ID_CONDICION = id
         else:
-            super().__init__(0,["no_attr","id","id_txt"], '')
+            super().__init__(0,["no_attr","ID_CONDICION","id","id_txt"], 'ID_CONDICION')
             self.ID_CONDICION = id
         
         self.NOMBRE = NOMBRE

@@ -364,9 +364,6 @@ def nueva_convocatoria():
                 return jsonify({"success": False, "error" : f"ID_VARIABLE duplicado, enviá solo una un mismo de variables"}), HTTPStatus.BAD_REQUEST
             variablesUsadas.append(item_VARIABLES["ID_VARIABLE"])
             
-        if 'VARIABLE_CONDICIONES' not in item_VARIABLES:
-            return jsonify({"success": False, "error" : f"Cada variable debe tener al menos una opción"}), HTTPStatus.BAD_REQUEST
-        
         varCondiciones = item_VARIABLES['VARIABLE_CONDICIONES']
         for item_condicion in varCondiciones:
             campos_validar = [
@@ -400,8 +397,7 @@ def nueva_convocatoria():
             tipo_subidio = TIPO_SUBSIDIO(
                 NOMBRE = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_NOM"],
                 POR_COBERTURA = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_POR"],
-                HRS_DEDICACION_X_SEM = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_HOR"],
-                id = "TS" + item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_NOM"][0:3]
+                HRS_DEDICACION_X_SEM = item_TIPO_SUBSIDIO["TIPO_SUBSIDIO_HOR"]
             )
             creoTipoSubsidio = DAOFactoryOracle.get_convocatoria_dao().create(tipo_subidio)
             if isinstance(creoTipoSubsidio, Error):
@@ -440,8 +436,7 @@ def nueva_convocatoria():
             condicion = CONDICIONES(
                 NOMBRE = item_condicion["CONDICION_NOM"],
                 PUNTAJE = item_condicion["CONDICION_PUN"],
-                FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"],
-                id = "C"+item_VARIABLES["ID_VARIABLE"]+str(i_condicion)
+                FK_ID_TIPO = item_VARIABLES["ID_VARIABLE"]
             )
             creoCondicion = DAOFactoryOracle.get_condiciones_dao().create(condicion)
             if isinstance(creoCondicion, Error):

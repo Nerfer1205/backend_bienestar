@@ -202,7 +202,7 @@ CREATE TABLE  "ESTUDIANTES"
 	"ASIG_PERDIDAS_SEM_PASADO" NUMBER(1) NULL,	-- Numero de materias reprobadas en el ultimo semestre cursado
 	"NUM_CREDITOS" NUMBER(2) NOT NULL,	-- Numero de creditos asociados a las materias cursadas por el estudiante en el semestre actual
 	"ESTADO" VARCHAR2(25) NOT NULL,	-- Situacion del estudiante dentro de la universidad. Puede estar: ACTIVO o INACTIVO.
-	"USUARIO" VARCHAR2(128) NOT NULL	-- Permite saber el usuario que cierto estudiante tiene en la tabla users del SMDB
+	"USUARIO" VARCHAR2(128) NULL	-- Permite saber el usuario que cierto estudiante tiene en la tabla users del SMDB
 )
 ;
 
@@ -214,7 +214,7 @@ CREATE TABLE  "RESPONSABLE"
 	"APELLIDOS" VARCHAR2(50) NOT NULL,	-- Apellidos del responsable
 	"TELEFONO" VARCHAR2(10) NOT NULL,	-- Numero de Telefono del responsable
 	"DIRECCION" VARCHAR2(50) NOT NULL,	-- Direccion fisica del hogar del responsable
-	"USUARIO" VARCHAR2(128) NOT NULL	-- Usuario que se relaciona con el que tiene en la tabla dba_users
+	"USUARIO" VARCHAR2(128) NOT 	-- Usuario que se relaciona con el que tiene en la tabla dba_users
 )
 ;
 

@@ -351,7 +351,7 @@ class DBA_USERS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DBA_USERS_DAO):
             return conecto
         try:
             # No se pasan bind variables debido al siguiente error: DPI-1059: bind variables are not supported in DDL statements
-            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE BRYDEF TEMPORARY TABLESPACE BRYTMP QUOTA 2M ON BRYDEF'''
+            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE APOYODEF TEMPORARY TABLESPACE APOYOTEMP1 QUOTA 2M ON APOYODEF'''
             self.cursor.execute(sql)   
             sql = f"GRANT R_ESTUDIANTE TO {usuario}"
             self.cursor.execute(sql)  

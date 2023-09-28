@@ -387,7 +387,7 @@ def nueva_convocatoria():
         FECHA_I_CUMP = req_FECHA_I_CUMP,
         FECHA_F_CUMP = req_FECHA_F_CUMP,
         PERIODO = req_PERIODO,
-        ESTADO= 'SIN INICIAR',
+        ESTADO= 'SIN_INICIAR',
         VALOR_X_ALMUERZO= req_VALOR_X_ALMUERZO,
         id = req_ID_CONVOCATORIA 
     )

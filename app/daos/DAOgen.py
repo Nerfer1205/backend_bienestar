@@ -47,10 +47,10 @@ class TIPO_DAO(DAOGenerico):
     def tipos_x_convocatoria(self, id_convocatoria):
         pass
 
-class CONDICIONES_DAO(DAOGenerico):
+class CONDICION_DAO(DAOGenerico):
     pass
 
-class DOCUMENTOS_DAO(DAOGenerico):
+class DOCUMENTO_DAO(DAOGenerico):
     @abstractmethod
     def documentos_tipo_condicion_x_solicitud(self, id_solicitud):
         pass
@@ -60,7 +60,7 @@ class DOCUMENTOS_DAO(DAOGenerico):
         pass
     
 
-class SOLICITUDES_DAO(DAOGenerico):
+class SOLICITUD_DAO(DAOGenerico):
     @abstractmethod
     def actualizar_estado(self, id_solicitud, estado):
         pass
@@ -70,8 +70,12 @@ class SOLICITUDES_DAO(DAOGenerico):
     @abstractmethod
     def solicitud_x_convocatoria(self,FK_ID_CONVOCATORIA):
         pass
+    @abstractmethod
+    def solicitudes_aprobadas_x_convocatoria(self,FK_ID_CONVOCATORIA):
+        pass
+    
 
-class ESTUDIANTES_DAO(DAOGenerico):
+class ESTUDIANTE_DAO(DAOGenerico):
     @abstractmethod
     def actualizar_usuario(self, usuario, codigo):
         pass
@@ -80,7 +84,7 @@ class ESTUDIANTES_DAO(DAOGenerico):
     def estudiante_x_usuario(self):
         pass
 
-class SOLICITUDES_APROBADAS_DAO(DAOGenerico):
+class SOLICITUD_APROBADA_DAO(DAOGenerico):
     pass
 
 class RESPONSABLE_DAO(DAOGenerico):
@@ -92,10 +96,10 @@ class TIQUETERA_DAO(DAOGenerico):
 class TICKET_DAO(DAOGenerico):
     pass
 
-class SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO(DAOGenerico):
+class SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO(DAOGenerico):
     pass
 
-class ACTIVIDADES_DE_APOYO_DAO(DAOGenerico):
+class ACTIVIDAD_DE_APOYO_DAO(DAOGenerico):
     pass
 
 class DBA_USERS_DAO(DAOGenerico):

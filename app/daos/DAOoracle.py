@@ -1,7 +1,7 @@
 import oracledb
 from flask import current_app
 from app.daos import DAOgen
-from app.models.entidades import ESTUDIANTES, CONVOCATORIA, TIPO, CONDICIONES, SOLICITUDES, TIPO_SUBSIDIO, TIPO
+from app.models.entidades import ESTUDIANTE, CONVOCATORIA, TIPO, CONDICION, SOLICITUD, TIPO_SUBSIDIO, TIPO
 
 class DAOgenericoOracle(DAOgen.DAOGenerico):
     def __init__(self):
@@ -172,7 +172,7 @@ class TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"UPDATE {self.esquema}.TIPO SET PUNTAJE_MAX = (SELECT MAX(PUNTAJE) FROM {self.esquema}.CONDICIONES WHERE FK_ID_TIPO = :id_tipo1) WHERE ID_TIPO = :id_tipo2"
+            sql = f"UPDATE {self.esquema}.TIPO SET PUNTAJE_MAX = (SELECT MAX(PUNTAJE) FROM {self.esquema}.CONDICION WHERE FK_ID_TIPO = :id_tipo1) WHERE ID_TIPO = :id_tipo2"
             values = {"id_tipo1": id_tipo, "id_tipo2": id_tipo}
             self.cursor.execute(sql,values)   
             self.conexion.commit()
@@ -197,31 +197,31 @@ class TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIPO_DAO):
         except oracledb.Error as error:
             return error
 
-class CONDICIONES_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONDICIONES_DAO):
+class CONDICION_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONDICION_DAO):
     def condiciones_x_tipo(self, id_tipo):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"SELECT * FROM {self.esquema}.CONDICIONES WHERE FK_ID_TIPO = :id_tipo"
+            sql = f"SELECT * FROM {self.esquema}.CONDICION WHERE FK_ID_TIPO = :id_tipo"
             values = {"id_tipo": id_tipo}
             self.cursor.execute(sql,values)   
             res = self.cursor.fetchall()
             res = [ r[1:] + (r[0],) for r in res]
             if res is None:
                 return None
-            return [CONDICIONES(*r) for r in res]
+            return [CONDICION(*r) for r in res]
         except oracledb.Error as error:
             return error
 
-class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
-    def actualizar_estado_documento(self, id_solicitud, id_documento, estado, puntaje):
+class DOCUMENTO_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTO_DAO):
+    def actualizar_estado_documento(self, id_solicitud, id_documento, estado, puntaje, observacion):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"UPDATE {self.esquema}.DOCUMENTOS SET ESTADO = :estado, PUNTAJE_OBTENIDO = :puntaje WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
-            values = {"estado" : estado, "puntaje":puntaje, "id_documento" : id_documento, "id_solicitud" : id_solicitud, }
+            sql = f"UPDATE {self.esquema}.DOCUMENTO SET ESTADO = :estado, PUNTAJE_OBTENIDO = :puntaje, OBSERVACION = :observacion WHERE FK_ID_SOLICITUD = :id_solicitud AND ID_DOCUMENTO = :id_documento"
+            values = {"estado" : estado, "puntaje":puntaje, "observacion" : observacion,"id_documento" : id_documento, "id_solicitud" : id_solicitud, }
             self.cursor.execute(sql, values)   
             self.conexion.commit()
             return True
@@ -234,10 +234,10 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO, c.PUNTAJE FROM {self.esquema}.DOCUMENTOS d
-                        JOIN {self.esquema}.CONDICIONES c ON c.ID_CONDICION = d.FK_ID_CONDICION
+            sql = f'''SELECT t.NOMBRE, c.NOMBRE, d.ESTADO, d.RUTA, d.ID_DOCUMENTO, c.PUNTAJE FROM {self.esquema}.DOCUMENTO d
+                        JOIN {self.esquema}.CONDICION c ON c.ID_CONDICION = d.FK_ID_CONDICION
                         JOIN {self.esquema}.TIPO t ON t.ID_TIPO = c.FK_ID_TIPO
-                        JOIN {self.esquema}.SOLICITUDES s ON s.ID_SOLICITUD = d.FK_ID_SOLICITUD
+                        JOIN {self.esquema}.SOLICITUD s ON s.ID_SOLICITUD = d.FK_ID_SOLICITUD
                         WHERE d.FK_ID_SOLICITUD = :FK_ID_SOLICITUD and
                         s.FK_ID_CONVOCATORIA = :id_convocatoria
                         '''
@@ -248,13 +248,13 @@ class DOCUMENTOS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DOCUMENTOS_DAO):
         except oracledb.Error as error:
             return error        
 
-class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
+class SOLICITUD_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUD_DAO):
     def actualizar_estado(self, id_solicitud, estado, motivo = None):
         conecto = self.conectar()
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"UPDATE {self.esquema}.SOLICITUDES SET ESTADO = :estado, MOTIVO_RECHAZO = :motivo WHERE ID_SOLICITUD = :id_solicitud"
+            sql = f"UPDATE {self.esquema}.SOLICITUD SET ESTADO = :estado, MOTIVO_RECHAZO = :motivo WHERE ID_SOLICITUD = :id_solicitud"
             values = {"estado" : estado, "motivo" : motivo,"id_solicitud" : id_solicitud}
             self.cursor.execute(sql, values)  
             self.conexion.commit() 
@@ -267,7 +267,7 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"SELECT * FROM {self.esquema}.SOLICITUDES WHERE FK_CODIGO = :FK_CODIGO AND FK_ID_CONVOCATORIA = :FK_ID_CONVOCATORIA"
+            sql = f"SELECT * FROM {self.esquema}.SOLICITUD WHERE FK_CODIGO = :FK_CODIGO AND FK_ID_CONVOCATORIA = :FK_ID_CONVOCATORIA"
             values = {"FK_CODIGO": FK_CODIGO,"FK_ID_CONVOCATORIA" : FK_ID_CONVOCATORIA}
             self.cursor.execute(sql, values)   
             res = self.cursor.fetchone()
@@ -275,7 +275,7 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
                 return None
             
             res = res[1:] + (res[0],)
-            return SOLICITUDES(*res)
+            return SOLICITUD(*res)
         except oracledb.Error as error:
             return error
         
@@ -284,8 +284,8 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f'''SELECT s.ID_SOLICITUD, s.ESTADO, e.NOMBRES, e.APELLIDOS FROM {self.esquema}.SOLICITUDES s, 
-                        {self.esquema}.ESTUDIANTES e
+            sql = f'''SELECT s.ID_SOLICITUD, s.ESTADO, e.NOMBRES, e.APELLIDOS FROM {self.esquema}.SOLICITUD s, 
+                        {self.esquema}.ESTUDIANTE e
                         WHERE s.FK_ID_CONVOCATORIA = :FK_ID_CONVOCATORIA AND
                         e.CODIGO = s.FK_CODIGO
                         '''
@@ -296,12 +296,33 @@ class SOLICITUDES_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_DAO):
             return res
         except oracledb.Error as error:
             return error
+    
+    def solicitudes_aprobadas_x_convocatoria(self,FK_ID_CONVOCATORIA):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            sql = f'''SELECT s.id_solicitud, s.puntaje_total, e.nombres, e.apellidos, e.correo, ts.nombre FROM solicitudes s, estudiantes e, solicitudes_aprobadas sa, tipo_subsidio ts WHERE 
+                            s.estado IN('APROBADO') AND
+                            e.codigo = s.fk_codigo AND
+                            sa.fk_id_solicitud = s.id_solicitud AND
+                            sa.fk_id_tipo_subsidio = ts.id_tipo_subsidio AND
+                            s.fk_id_convocatoria = :FK_ID_CONVOCATORIA
+                            ORDER BY s.puntaje_total DESC, e.promedio_ponderado DESC, e.asig_perdidas_sem_pasado ASC, e.ingresos ASC
+                        '''
+            print(sql, FK_ID_CONVOCATORIA)
+            values = {"FK_ID_CONVOCATORIA" : FK_ID_CONVOCATORIA}
+            self.cursor.execute(sql, values)   
+            res = self.cursor.fetchall()
+            return res
+        except oracledb.Error as error:
+            return error
 
-class ESTUDIANTES_DAO_ORACLE(DAOgenericoOracle, DAOgen.ESTUDIANTES_DAO):
+class ESTUDIANTE_DAO_ORACLE(DAOgenericoOracle, DAOgen.ESTUDIANTE_DAO):
     
     def actualizar_usuario(self, usuario, codigo):
         try:
-            sql = f"UPDATE {self.esquema}.ESTUDIANTES SET USUARIO = :USUARIO WHERE CODIGO = :CODIGO"
+            sql = f"UPDATE {self.esquema}.ESTUDIANTE SET USUARIO = :USUARIO WHERE CODIGO = :CODIGO"
             values = {"USUARIO" : usuario, "CODIGO" : codigo}
             self.cursor.execute(sql, values)   
             self.conexion.commit()
@@ -314,7 +335,7 @@ class ESTUDIANTES_DAO_ORACLE(DAOgenericoOracle, DAOgen.ESTUDIANTES_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f"SELECT * FROM {self.esquema}.ESTUDIANTES WHERE USUARIO = :usuario"
+            sql = f"SELECT * FROM {self.esquema}.ESTUDIANTE WHERE USUARIO = :usuario"
             values = {"usuario" : current_app.config['ORACLE_USER']}
             self.cursor.execute(sql, values)   
             res = self.cursor.fetchone()
@@ -322,11 +343,11 @@ class ESTUDIANTES_DAO_ORACLE(DAOgenericoOracle, DAOgen.ESTUDIANTES_DAO):
                 return None
             
             res = res[1:] + (res[0],)
-            return ESTUDIANTES(*res)
+            return ESTUDIANTE(*res)
         except oracledb.Error as error:
             return error
 
-class SOLICITUDES_APROBADAS_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_APROBADAS_DAO):
+class SOLICITUD_APROBADA_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUD_APROBADA_DAO):
     pass
 
 class RESPONSABLE_DAO_ORACLE(DAOgenericoOracle, DAOgen.RESPONSABLE_DAO):
@@ -338,10 +359,10 @@ class TIQUETERA_DAO_ORACLE(DAOgenericoOracle, DAOgen.TIQUETERA_DAO):
 class TICKET_DAO_ORACLE(DAOgenericoOracle, DAOgen.TICKET_DAO):
     pass
 
-class SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO):
+class SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO):
     pass
 
-class ACTIVIDADES_DE_APOYO_DAO_ORACLE(DAOgenericoOracle, DAOgen.ACTIVIDADES_DE_APOYO_DAO):
+class ACTIVIDAD_DE_APOYO_DAO_ORACLE(DAOgenericoOracle, DAOgen.ACTIVIDAD_DE_APOYO_DAO):
     pass
 
 class DBA_USERS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DBA_USERS_DAO):

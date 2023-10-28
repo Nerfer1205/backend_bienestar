@@ -5,16 +5,16 @@ from app.daos.DAOoracle import (
     CONVOCATORIA_DAO_ORACLE,
     CONVOCATORIA_TIPO_DAO_ORACLE,
     TIPO_DAO_ORACLE,
-    CONDICIONES_DAO_ORACLE,
-    DOCUMENTOS_DAO_ORACLE,
-    SOLICITUDES_DAO_ORACLE,
-    ESTUDIANTES_DAO_ORACLE,
-    SOLICITUDES_APROBADAS_DAO_ORACLE,
+    CONDICION_DAO_ORACLE,
+    DOCUMENTO_DAO_ORACLE,
+    SOLICITUD_DAO_ORACLE,
+    ESTUDIANTE_DAO_ORACLE,
+    SOLICITUD_APROBADA_DAO_ORACLE,
     RESPONSABLE_DAO_ORACLE,
     TIQUETERA_DAO_ORACLE,
     TICKET_DAO_ORACLE,
-    SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO_ORACLE,
-    ACTIVIDADES_DE_APOYO_DAO_ORACLE,
+    SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO_ORACLE,
+    ACTIVIDAD_DE_APOYO_DAO_ORACLE,
     DBA_USERS_DAO_ORACLE,
 )
 
@@ -77,31 +77,31 @@ class DAOFactoryOracle:
     @classmethod
     def get_condiciones_dao(self):
         if not self._condiciones_dao:
-            self._condiciones_dao = CONDICIONES_DAO_ORACLE()
+            self._condiciones_dao = CONDICION_DAO_ORACLE()
         return self._condiciones_dao
 
     @classmethod
     def get_documentos_dao(self):
         if not self._documentos_dao:
-            self._documentos_dao = DOCUMENTOS_DAO_ORACLE()
+            self._documentos_dao = DOCUMENTO_DAO_ORACLE()
         return self._documentos_dao
 
     @classmethod
     def get_solicitudes_dao(self):
         if not self._solicitudes_dao:
-            self._solicitudes_dao = SOLICITUDES_DAO_ORACLE()
+            self._solicitudes_dao = SOLICITUD_DAO_ORACLE()
         return self._solicitudes_dao
 
     @classmethod
     def get_estudiantes_dao(self):
         if not self._estudiantes_dao:
-            self._estudiantes_dao = ESTUDIANTES_DAO_ORACLE()
+            self._estudiantes_dao = ESTUDIANTE_DAO_ORACLE()
         return self._estudiantes_dao
 
     @classmethod
     def get_solicitudes_aprobadas_dao(self):
         if not self._solicitudes_aprobadas_dao:
-            self._solicitudes_aprobadas_dao = SOLICITUDES_APROBADAS_DAO_ORACLE()
+            self._solicitudes_aprobadas_dao = SOLICITUD_APROBADA_DAO_ORACLE()
         return self._solicitudes_aprobadas_dao
 
     @classmethod
@@ -125,7 +125,7 @@ class DAOFactoryOracle:
     @classmethod
     def get_solicitudes_aprobadas_actividades_de_apoyo_dao(self):
         if not self._solicitudes_aprobadas_actividades_de_apoyo_dao:
-            self._solicitudes_aprobadas_actividades_de_apoyo_dao = SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO_DAO_ORACLE()
+            self._solicitudes_aprobadas_actividades_de_apoyo_dao = SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO_ORACLE()
         return self._solicitudes_aprobadas_actividades_de_apoyo_dao
 
     @classmethod

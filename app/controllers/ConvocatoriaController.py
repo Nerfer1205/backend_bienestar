@@ -5,14 +5,58 @@ from flask import Blueprint, request, jsonify, current_app
 from http import HTTPStatus
 from app.funciones.token_jwt import token_required
 from app.daos.DAOFactory import DAOFactoryOracle
-from app.models.entidades import CONVOCATORIA, DOCUMENTOS, SOLICITUDES, TIPO_SUBSIDIO, TIPO, CONVOCATORIA_TIPO_SUBSIDIO, CONVOCATORIA_TIPO, CONDICIONES
+from app.models.entidades import CONVOCATORIA, DOCUMENTO, SOLICITUD, TIPO_SUBSIDIO, TIPO, CONVOCATORIA_TIPO_SUBSIDIO, CONVOCATORIA_TIPO, CONDICION
 from oracledb import Error
 import datetime
-
+import smtplib, ssl
+from email.mime.text import MIMEText
 
 ruta = 'http://127.0.0.1:5000/static/uploads/'
 
 convocatoria_bp = Blueprint('convocatoria', __name__)
+
+@convocatoria_bp.route('/notificar/<id_convocatoria>',methods=["GET"])
+@token_required
+def notificar_estudiantes(id_convocatoria):
+    convocatoria = CONVOCATORIA(id=id_convocatoria)
+    convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
+    if isinstance(convocatoria, Error):
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
+    if convocatoria is None:
+        return jsonify({"success": False, "message" : "No hay convocatorias con este id"}) , HTTPStatus.BAD_REQUEST
+    
+    if convocatoria.ESTADO != 'PUBLICACION':
+        return jsonify({"success": False, "message" : "La convocatoria no esta en estado PUBLICACION"}) , HTTPStatus.BAD_REQUEST
+
+
+    consultaSolicitudes = DAOFactoryOracle.get_solicitudes_dao().solicitudes_aprobadas_x_convocatoria(convocatoria.ID_CONVOCATORIA)
+    if isinstance(consultaSolicitudes, Error):
+        return jsonify({"success": False, "message" : str(consultaSolicitudes), "origen": "consultaSolicitudes"}) , HTTPStatus.BAD_REQUEST
+
+    for respSol in consultaSolicitudes:
+        id_solicitud = respSol[0]
+        puntaje_total = respSol[1]
+        nombres = respSol[2]
+        apellidos = respSol[3]
+        correo = respSol[4]
+        tipoS = respSol[5]
+
+        contexto = ssl.create_default_context()
+        msg = MIMEText(f'<h1>Has sido aceptado para el apoyo alimentarios</h1>'\
+                    f'<p>Hola {nombres} {apellidos}, has sido aceptado para el tipo subsidio: {tipoS}, tu puntaje fue: {puntaje_total}</p>'\
+                    f'<p>Cordialmente <br> Bienestar UD</p>'                   
+                    , 'html')
+
+        msg['Subject'] = 'Respuesta Solicitud #' + id_solicitud
+        msg['From'] = 'info@bienestarud.com'
+        msg['To'] = correo
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=contexto) as server:
+            server.login(current_app.config['MAIL'], current_app.config['MAIL_PASS'])
+            server.sendmail(current_app.config['MAIL'], correo, msg.as_string())
+
+    return jsonify({"success": True, "message" : "Se han notificado a los estudiantes con éxito!"}) , HTTPStatus.OK
+
+
 
 @convocatoria_bp.route('/ver-ultima',methods=["GET"])
 @token_required
@@ -112,7 +156,7 @@ def inscribir_estudiante():
             if file.filename == '':
                 return jsonify({"success": False, "message" : "No se envió el documento: " + tipo.NOMBRE}) , HTTPStatus.BAD_REQUEST
     
-    solicitud_c = SOLICITUDES(FK_CODIGO=estudiante.CODIGO, FK_ID_CONVOCATORIA=id_convocatoria)
+    solicitud_c = SOLICITUD(FK_CODIGO=estudiante.CODIGO, FK_ID_CONVOCATORIA=id_convocatoria)
     creoSolicitud = DAOFactoryOracle.get_solicitudes_dao().create(solicitud_c)
     if isinstance(creoSolicitud, Error):
         return jsonify({"success": False,"origen": "creoSolicitud", "message" : str(creoSolicitud)}) , HTTPStatus.BAD_REQUEST
@@ -127,7 +171,7 @@ def inscribir_estudiante():
                 documento_ruta = secure_filename(file.filename)
                 documento_condicion = request.form.get(nm_var_condicion)
                 file.save(os.path.join(upload_folder, documento_ruta))
-                documento_bd = DOCUMENTOS(
+                documento_bd = DOCUMENTO(
                     id=contador,
                     RUTA=documento_ruta,
                     ESTADO='POR_REVISAR',
@@ -179,7 +223,7 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
     if convocatoria is None:
         return jsonify({"success": False, "message" : "Convocatoria no encontrada"}) , HTTPStatus.BAD_REQUEST
     
-    solicitud = DAOFactoryOracle.get_solicitudes_dao().read(SOLICITUDES(id=id_solicitud))
+    solicitud = DAOFactoryOracle.get_solicitudes_dao().read(SOLICITUD(id=id_solicitud))
     if isinstance(solicitud, Error):
         return jsonify({"success": False, "message" : str(solicitud), "origen": "solicitud"}) , HTTPStatus.BAD_REQUEST
     if solicitud is None:
@@ -217,7 +261,7 @@ def actualizar_documentos():
     if isinstance(convocatoria, Error):
         return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
 
-    solicitud = SOLICITUDES(id=id_solicitud)
+    solicitud = SOLICITUD(id=id_solicitud)
     solicitud = DAOFactoryOracle.get_solicitudes_dao().read(solicitud)
     if isinstance(solicitud, Error):
         return jsonify({"success": False, "message" : str(solicitud), "origen": "solicitud"}) , HTTPStatus.BAD_REQUEST
@@ -233,22 +277,27 @@ def actualizar_documentos():
             return jsonify({"success": False, "message" : "No se envió la verificación para el documento con ID: " + respDoc[4]}) , HTTPStatus.BAD_REQUEST
 
     estadoSolicitud = 'VERIFICADA'
-    motivoRechazo = None
+    cuentaRechazos = 0
     for respDoc in consultaDocumentos:
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
+        nm_var_observacion = 'observacion_' + str(respDoc[4])
         documento_estado = json_recibido[nm_var_documento]
         puntaje_obtenido = respDoc[5]
+        motivoRechazo = None
         if documento_estado == "RECHAZADO":
-            estadoSolicitud = 'RECHAZADA'
-            motivoRechazo = "Documento(s) invalido(s)"
+            cuentaRechazos += 1
+            motivoRechazo = json_recibido[nm_var_observacion]
             puntaje_obtenido = 0
 
-        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, puntaje_obtenido)
+        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, puntaje_obtenido, motivoRechazo)
         if isinstance(actualizoDocumento, Error):
             return jsonify({"success": False, "message" : str(actualizoDocumento), "origen": "actualizoDocumento"}) , HTTPStatus.BAD_REQUEST
         
+    motivoRechazoSol = None
+    if(cuentaRechazos == len(consultaDocumentos)):
+        motivoRechazoSol = "Todos los documentos fueron rechazados"
 
-    actualizoSolicitud = DAOFactoryOracle.get_solicitudes_dao().actualizar_estado(id_solicitud, estadoSolicitud, motivoRechazo)
+    actualizoSolicitud = DAOFactoryOracle.get_solicitudes_dao().actualizar_estado(id_solicitud, estadoSolicitud, motivoRechazoSol)
     
     if isinstance(actualizoSolicitud, Error):
         return jsonify({"success": False, "message" : str(actualizoSolicitud), "origen": "actualizoSolicitud"}) , HTTPStatus.BAD_REQUEST

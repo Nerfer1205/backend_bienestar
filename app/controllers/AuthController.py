@@ -3,7 +3,7 @@ from http import HTTPStatus
 from app.funciones.token_jwt import token_required
 from app.daos.DAOoracle import DAOgenericoOracle
 from app.daos.DAOFactory import DAOFactoryOracle
-from app.models.entidades import ESTUDIANTES
+from app.models.entidades import ESTUDIANTE
 from oracledb import Error
 import jwt
 
@@ -44,7 +44,7 @@ def registro():
     req_contrasena = json_recibido["contrasena"]
     req_codigo = json_recibido["codigo"]
 
-    estudiante = ESTUDIANTES(id=req_codigo)
+    estudiante = ESTUDIANTE(id=req_codigo)
     estudiante = DAOFactoryOracle.get_estudiantes_dao().read(estudiante)
     if isinstance(estudiante, Error):
         return jsonify({"success": False, "message" : str(estudiante)}) , HTTPStatus.BAD_REQUEST

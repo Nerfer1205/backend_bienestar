@@ -96,7 +96,7 @@ class TIPO(Entidad):
         self.NOMBRE = NOMBRE
         self.PUNTAJE_MAX = PUNTAJE_MAX
 
-class CONDICIONES(Entidad):
+class CONDICION(Entidad):
     def __init__(self, NOMBRE = '', PUNTAJE=0, FK_ID_TIPO = '', id = None ):
         
         if id is not None:
@@ -111,8 +111,8 @@ class CONDICIONES(Entidad):
         self.FK_ID_TIPO = FK_ID_TIPO
 
 #otra compuesta
-class DOCUMENTOS(Entidad):
-    def __init__(self, RUTA = '', ESTADO = '', PUNTAJE_OBTENIDO = 0 , FK_ID_CONDICION = None, FK_ID_SOLICITUD = None, id = None ):
+class DOCUMENTO(Entidad):
+    def __init__(self, RUTA = '', ESTADO = '', PUNTAJE_OBTENIDO = 0, OBSERVACION = '', FK_ID_CONDICION = None, FK_ID_SOLICITUD = None, id = None ):
         
         if id is not None:
             super().__init__(id,["no_attr","id","id_txt"], '')
@@ -124,10 +124,11 @@ class DOCUMENTOS(Entidad):
         self.RUTA = RUTA
         self.ESTADO = ESTADO
         self.PUNTAJE_OBTENIDO = PUNTAJE_OBTENIDO
+        self.OBSERVACION = OBSERVACION
         self.FK_ID_CONDICION = FK_ID_CONDICION
         self.FK_ID_SOLICITUD = FK_ID_SOLICITUD
 
-class SOLICITUDES(Entidad):
+class SOLICITUD(Entidad):
     def __init__(self, FECHA_CREACION = None, ESTADO = None, PUNTAJE_TOTAL = None, MOTIVO_RECHAZO = None, FK_CODIGO = None, FK_ID_CONVOCATORIA = None, FK_RESPONSABLE_VERIFICAR = None, id = None ):
         
         if id is not None:
@@ -145,8 +146,8 @@ class SOLICITUDES(Entidad):
         self.FK_ID_CONVOCATORIA = FK_ID_CONVOCATORIA
         self.FK_RESPONSABLE_VERIFICAR = FK_RESPONSABLE_VERIFICAR
 
-class ESTUDIANTES(Entidad):
-    def __init__(self, PROYECTO = '', SEMESTRE = '', TIPO_DOCUMENTO = '' , DOCUMENTO = '', NOMBRES = '', APELLIDOS = '', TELEFONO = '', DIRECCION = '', MUNICIPIO = '', COSTO_SEM = None , INGRESOS = None, PROMEDIO_PONDERADO = None, ASIG_PERDIDAS_SEM_PASADO = 0, NUM_CREDITOS = 0, ESTADO = '', USUARIO = '', id = None ):
+class ESTUDIANTE(Entidad):
+    def __init__(self, PROYECTO = '', SEMESTRE = '', TIPO_DOCUMENTO = '' , DOCUMENTO = '', NOMBRES = '', APELLIDOS = '', CORREO = '', DIRECCION = '', MUNICIPIO = '', COSTO_SEM = None , INGRESOS = None, PROMEDIO_PONDERADO = None, ASIG_PERDIDAS_SEM_PASADO = 0, NUM_CREDITOS = 0, ESTADO = '', USUARIO = '', id = None ):
         
         if id is not None:
             super().__init__(id,["no_attr","id","CODIGO","id_txt"], 'CODIGO')
@@ -161,7 +162,7 @@ class ESTUDIANTES(Entidad):
         self.DOCUMENTO = DOCUMENTO
         self.NOMBRES = NOMBRES
         self.APELLIDOS = APELLIDOS
-        self.TELEFONO = TELEFONO
+        self.CORREO = CORREO
         self.DIRECCION = DIRECCION
         self.MUNICIPIO = MUNICIPIO
         self.COSTO_SEM = COSTO_SEM
@@ -172,7 +173,7 @@ class ESTUDIANTES(Entidad):
         self.ESTADO = ESTADO
         self.USUARIO = USUARIO
 
-class SOLICITUDES_APROBADAS(Entidad):
+class SOLICITUD_APROBADA(Entidad):
     def __init__(self, FECHA_APROBACION = None, ESTADO = '', MOTIVO_FINALIZACION = '', FK_ID_SOLICITUD = '', FK_ID_TIPO_SUBSIDIO = '', FK_RESPONSABLE_APROBAR = '', id = None ):
         
         if id is not None:
@@ -236,7 +237,7 @@ class TICKET(Entidad):
         self.RECLAMADO = RECLAMADO
 
 #otra compuesta
-class SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO(Entidad):
+class SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO(Entidad):
     def __init__(self, FK_ID_ACTIVIDAD = '', FK_ID_APROBACION = '', HRS_ASISTENCIA = 0, id = None ):
         
         if id is not None:
@@ -248,7 +249,7 @@ class SOLICITUDES_APROBADAS_ACTIVIDADES_DE_APOYO(Entidad):
         
         self.HRS_ASISTENCIA = HRS_ASISTENCIA
 
-class ACTIVIDADES_DE_APOYO(Entidad):
+class ACTIVIDAD_DE_APOYO(Entidad):
     def __init__(self, DESCRIPCION = '', FECHA = None, FK_RESPONSABLE_SUPERVISAR = '', id = None ):
         
         if id is not None:

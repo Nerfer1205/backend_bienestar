@@ -162,7 +162,69 @@ class CONVOCATORIA_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_DAO):
             return CONVOCATORIA(*res)
         except oracledb.Error as error:
             return error
+    
+    def obtener_todas(self, estado, periodo):
+        
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            values = {}
+            sql = f"SELECT * FROM {self.esquema}.CONVOCATORIA WHERE 1=1 "
+            if estado is not None:
+                values["estado"] = estado
+                sql += " AND estado = :estado "
+            if periodo is not None:
+                values["periodo"] = periodo
+                sql += " AND periodo = :periodo "
 
+            self.cursor.execute(sql,values)   
+            res = self.cursor.fetchall()
+            res = [ r[1:] + (r[0],) for r in res]
+            if res is None:
+                return None
+            return [CONVOCATORIA(*r) for r in res]
+        
+        except oracledb.Error as error:
+            return error
+    
+    def obtener_periodos(self):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            
+            sql = f"SELECT DISTINCT PERIODO FROM {self.esquema}.CONVOCATORIA"
+            self.cursor.execute(sql)   
+            res = self.cursor.fetchall()
+            return res
+        
+        except oracledb.Error as error:
+            return error
+
+    def lista_publicacion(self, id_convocatoria):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            
+            sql = f'''SELECT s.ID_SOLICITUD, e.NOMBRES || ' ' || e.APELLIDOS, s.ESTADO, ts.NOMBRE, ts.POR_COBERTURA, ts.HRS_DEDICACION_X_SEM,s.MOTIVO_RECHAZO 
+                FROM {self.esquema}.solicitud s 
+                JOIN {self.esquema}.estudiante e ON e.CODIGO = s.FK_CODIGO
+                LEFT JOIN {self.esquema}.solicitud_aprobada sa ON sa.FK_ID_SOLICITUD = s.id_solicitud
+                LEFT JOIN {self.esquema}.tipo_subsidio ts ON ts.id_tipo_subsidio = sa.fk_id_tipo_subsidio
+                WHERE s.fk_id_convocatoria = :id_convocatoria
+            '''
+            values = {"id_convocatoria": id_convocatoria}
+
+            self.cursor.execute(sql, values)   
+            res = self.cursor.fetchall()
+            return res
+        
+        except oracledb.Error as error:
+            return error
+        
+        
 class CONVOCATORIA_TIPO_DAO_ORACLE(DAOgenericoOracle, DAOgen.CONVOCATORIA_TIPO_DAO):
     pass
 
@@ -372,7 +434,8 @@ class DBA_USERS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DBA_USERS_DAO):
             return conecto
         try:
             # No se pasan bind variables debido al siguiente error: DPI-1059: bind variables are not supported in DDL statements
-            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE APOYODEF TEMPORARY TABLESPACE APOYOTEMP1 QUOTA 2M ON APOYODEF'''
+            #sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE APOYODEF TEMPORARY TABLESPACE APOYOTEMP1 QUOTA 2M ON APOYODEF'''
+            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE BRYDEF TEMPORARY TABLESPACE BRYTMP QUOTA 2M ON BRYDEF'''
             self.cursor.execute(sql)   
             sql = f"GRANT R_ESTUDIANTE TO {usuario}"
             self.cursor.execute(sql)  

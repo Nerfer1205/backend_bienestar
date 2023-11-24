@@ -58,14 +58,15 @@ def notificar_estudiantes(id_convocatoria):
 
 
 
-@convocatoria_bp.route('/ver-ultima',methods=["GET"])
+@convocatoria_bp.route('/ver-inscribir/<id_convocatoria>',methods=["GET"])
 @token_required
-def ver_ultima():
-    convocatoria = DAOFactoryOracle.get_convocatoria_dao().obtener_ultima('INSCRIPCION')
+def ver_inscribir(id_convocatoria):
+    convocatoria = CONVOCATORIA(id=id_convocatoria)
+    convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
         return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
     if convocatoria is None:
-        return jsonify({"success": False, "message" : "Aun no existen convocatorias"}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "message" : "Convocatoria no encontrada"}) , HTTPStatus.BAD_REQUEST
     
     return jsonify({"success": True, "message" : "Convocatoria consultada con éxito!", "data": {
         "CONVOCATORIA" : {
@@ -282,14 +283,13 @@ def actualizar_documentos():
         nm_var_documento = 'estado_documento_' + str(respDoc[4])
         nm_var_observacion = 'observacion_' + str(respDoc[4])
         documento_estado = json_recibido[nm_var_documento]
+        doc_observacion = json_recibido[nm_var_observacion]
         puntaje_obtenido = respDoc[5]
-        motivoRechazo = None
         if documento_estado == "RECHAZADO":
             cuentaRechazos += 1
-            motivoRechazo = json_recibido[nm_var_observacion]
             puntaje_obtenido = 0
 
-        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, puntaje_obtenido, motivoRechazo)
+        actualizoDocumento = DAOFactoryOracle.get_documentos_dao().actualizar_estado_documento(id_solicitud, respDoc[4], documento_estado, puntaje_obtenido, doc_observacion)
         if isinstance(actualizoDocumento, Error):
             return jsonify({"success": False, "message" : str(actualizoDocumento), "origen": "actualizoDocumento"}) , HTTPStatus.BAD_REQUEST
         
@@ -501,9 +501,84 @@ def nueva_convocatoria():
 
     return jsonify({"success": True, "message" : "Convocatoria creada con éxito!"}) , HTTPStatus.OK
 
+@convocatoria_bp.route('/',methods=["GET","POST"])
+@token_required
+def obtener_convocatorias():
+    json_recibido = request.get_json()
+    estado = None
+    periodo = None
+    if 'estado' in json_recibido and len(json_recibido['estado'].strip()) != 0:
+        estado = json_recibido["estado"]
+
+    if 'periodo' in json_recibido and len(json_recibido['periodo'].strip()) != 0:
+        periodo = json_recibido["periodo"]
     
+    convocatorias = DAOFactoryOracle.get_convocatoria_dao().obtener_todas(estado, periodo)
+    if isinstance(convocatorias, Error):
+        return jsonify({"success": False, "message" : str(convocatorias), "origen": "convocatorias"}) , HTTPStatus.BAD_REQUEST
     
+    convocatorias_dict = [{"ID_CONVOCATORIA": respSol.ID_CONVOCATORIA,
+                         "PERIODO": respSol.PERIODO,
+                         "ESTADO": respSol.ESTADO
+                         } for respSol in convocatorias]
+
+    return jsonify({"success": True, 
+                    "message" : "Convocatorias consultadas con éxito!", 
+                    "convocatorias" : convocatorias_dict
+                  }) , HTTPStatus.OK
+
+@convocatoria_bp.route('/filtros',methods=["GET"])
+@token_required
+def obtener_data_filtros():
     
+    periodos = DAOFactoryOracle.get_convocatoria_dao().obtener_periodos()
+    if isinstance(periodos, Error):
+        return jsonify({"success": False, "message" : str(periodos), "origen": "periodos"}) , HTTPStatus.BAD_REQUEST
+    
+    periodos_dict = [{"PERIODO": respSol[0]} for respSol in periodos]
+    
+    estados = [
+        {"ESTADO" : "SIN_INICIAR"},
+        {"ESTADO" : "INSCRIPCION"},
+        {"ESTADO" : "VERIFICACION_DOC"},
+        {"ESTADO" : "CALCULO_P"},
+        {"ESTADO" : "ASIGNACION_S"},
+        {"ESTADO" : "PUBLICACION"},
+        {"ESTADO" : "CUMPLIENTO"},
+        {"ESTADO" : "TERMINADA"}
+    ]
+
+    return jsonify({"success": True, 
+                    "message" : "Filtros consultados con éxito!", 
+                    "periodos" : periodos_dict,
+                    "estados" : estados
+                  }) , HTTPStatus.OK
+    
+
+@convocatoria_bp.route('/ver-lista-publicacion/<id_convocatoria>',methods=["GET"])
+@token_required
+def ver_lista_publicacion(id_convocatoria):
+    
+    lista = DAOFactoryOracle.get_convocatoria_dao().lista_publicacion(id_convocatoria)
+    if isinstance(lista, Error):
+        return jsonify({"success": False, "message" : str(lista), "origen": "lista"}) , HTTPStatus.BAD_REQUEST
+    
+    lista_dict = [{
+                      "ID_SOLICITUD": item_l[0],
+                      "ESTUDIANTE" : item_l[1],
+                      "ESTADO" : item_l[2],
+                      "TIPO_SUB_NOM" : item_l[3],
+                      "TIPO_SUB_POR" : item_l[4],
+                      "TIPO_SUB_HRS" : item_l[5],
+                      "MOTIVO_RECHAZO" : item_l[6]
+                    }
+                    for item_l in lista]
+    
+    return jsonify({"success": True, 
+                    "message" : "Solicitudes consultadas con éxito!", 
+                    "solicitudes" : lista_dict
+                  }) , HTTPStatus.OK
+
 
 
 def verificar_datos_vacios_inscribirme(json_recibido):
@@ -518,4 +593,3 @@ def verificar_datos_vacios_inscribirme(json_recibido):
 def dateToStr(date):
     fecha = datetime.datetime.strptime(str(date), "%Y-%m-%d %H:%M:%S")
     return fecha.strftime("%Y-%m-%d")
-     

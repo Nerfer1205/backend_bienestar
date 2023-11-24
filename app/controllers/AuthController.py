@@ -47,7 +47,7 @@ def registro():
     estudiante = ESTUDIANTE(id=req_codigo)
     estudiante = DAOFactoryOracle.get_estudiantes_dao().read(estudiante)
     if isinstance(estudiante, Error):
-        return jsonify({"success": False, "message" : str(estudiante)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "estudiante" ,"message" : str(estudiante)}) , HTTPStatus.BAD_REQUEST
     
     if estudiante is None:
         return jsonify({"success": False, "message" : "Estudiante no encontrado"}) , HTTPStatus.BAD_REQUEST
@@ -57,11 +57,11 @@ def registro():
 
     usuarioFueCreado = DAOFactoryOracle.get_usuario_dao().crear_usuario(req_usuario, req_contrasena)
     if isinstance(usuarioFueCreado, Error):
-        return jsonify({"success": False, "message" : str(usuarioFueCreado)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "usuarioFueCreado" ,"message" : str(usuarioFueCreado)}) , HTTPStatus.BAD_REQUEST
    
     estudianteActualizado = DAOFactoryOracle.get_estudiantes_dao().actualizar_usuario(req_usuario,req_codigo)
     if isinstance(estudianteActualizado, Error):
-        return jsonify({"success": False, "message" : str(estudianteActualizado)}) , HTTPStatus.BAD_REQUEST
+        return jsonify({"success": False, "origen": "estudianteActualizado", "message" : str(estudianteActualizado)}) , HTTPStatus.BAD_REQUEST
     
 
     return jsonify({"success": True, "message" : "¡Estudiante creado correctamente!"}) , HTTPStatus.OK    

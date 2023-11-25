@@ -501,6 +501,25 @@ def nueva_convocatoria():
 
     return jsonify({"success": True, "message" : "Convocatoria creada con éxito!"}) , HTTPStatus.OK
 
+@convocatoria_bp.route('/ver-solicitudes/<id_convocatoria>',methods=["GET"])
+@token_required
+def ver_solicitudes_x_convocatoria(id_convocatoria):
+   
+    consultaSolicitudes = DAOFactoryOracle.get_solicitudes_dao().solicitud_x_convocatoria(id_convocatoria)
+    if isinstance(consultaSolicitudes, Error):
+        return jsonify({"success": False, "message" : str(consultaSolicitudes), "origen": "consultaSolicitudes"}) , HTTPStatus.BAD_REQUEST
+
+    solicitudes_dict = [{"ID_SOLICITUD": respSol[0],
+                         "ESTADO_SOLICITUD": respSol[1],
+                         "NOMBRE_ESTUDIANTE": respSol[2],
+                         "APELLIDO_ESTUDIANTE": respSol[3]
+                         } for respSol in consultaSolicitudes]
+    
+    return jsonify({"success": True, "message" : "Solicitudes consultadas con éxito!", "data": {
+        "SOLICITUDES": solicitudes_dict
+    }}) , HTTPStatus.OK
+
+
 @convocatoria_bp.route('/',methods=["GET","POST"])
 @token_required
 def obtener_convocatorias():

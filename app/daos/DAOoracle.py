@@ -434,11 +434,29 @@ class DBA_USERS_DAO_ORACLE(DAOgenericoOracle, DAOgen.DBA_USERS_DAO):
             return conecto
         try:
             # No se pasan bind variables debido al siguiente error: DPI-1059: bind variables are not supported in DDL statements
-            #sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE APOYODEF TEMPORARY TABLESPACE APOYOTEMP1 QUOTA 2M ON APOYODEF'''
-            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE BRYDEF TEMPORARY TABLESPACE BRYTMP QUOTA 2M ON BRYDEF'''
+            sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE APOYODEF TEMPORARY TABLESPACE APOYOTEMP1 QUOTA 2M ON APOYODEF'''
+            #sql = f'''CREATE USER {usuario} IDENTIFIED BY {contrasena} DEFAULT TABLESPACE BRYDEF TEMPORARY TABLESPACE BRYTMP QUOTA 2M ON BRYDEF'''
             self.cursor.execute(sql)   
             sql = f"GRANT R_ESTUDIANTE TO {usuario}"
             self.cursor.execute(sql)  
             return True
+        except oracledb.Error as error:
+            return error
+
+class PROCEDIMIENTOS(DAOgenericoOracle, DAOgen.PROCEDIMIENTOS):
+    def calcular_puntaje(self, id_convocatora):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+
+            lc_error = self.cursor.var(int)
+            lm_error = self.cursor.var(str)
+
+            self.cursor.callproc(f'{self.esquema}.PK_CALCULAR_PUNTAJE.PR_ASIGNAR_PUNTAJE', [id_convocatora, lc_error, lm_error])
+            if(lc_error.getvalue() == 0):
+                return True
+            else:
+                return {"codigo_error": lc_error.getvalue(), "mensaje_error":lm_error.getvalue()}
         except oracledb.Error as error:
             return error

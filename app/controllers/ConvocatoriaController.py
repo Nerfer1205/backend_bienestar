@@ -523,14 +523,15 @@ def ver_solicitudes_x_convocatoria(id_convocatoria):
 @convocatoria_bp.route('/',methods=["GET","POST"])
 @token_required
 def obtener_convocatorias():
-    json_recibido = request.get_json()
     estado = None
     periodo = None
-    if 'estado' in json_recibido and len(json_recibido['estado'].strip()) != 0:
-        estado = json_recibido["estado"]
-
-    if 'periodo' in json_recibido and len(json_recibido['periodo'].strip()) != 0:
-        periodo = json_recibido["periodo"]
+    if 'estado' in request.args:
+        estado = request.args['estado']
+    
+    # Verificar si el parámetro 'edad' está presente en la URL
+    if 'periodo' in request.args:
+        periodo = request.args['periodo']
+    
     
     convocatorias = DAOFactoryOracle.get_convocatoria_dao().obtener_todas(estado, periodo)
     if isinstance(convocatorias, Error):
@@ -597,6 +598,20 @@ def ver_lista_publicacion(id_convocatoria):
                     "message" : "Solicitudes consultadas con éxito!", 
                     "solicitudes" : lista_dict
                   }) , HTTPStatus.OK
+
+@convocatoria_bp.route('/calcular-puntaje/<id_convocatoria>',methods=["POST"])
+@token_required
+def calcular_puntaje_convocatoria(id_convocatoria):
+   
+    calcular = DAOFactoryOracle.get_procedimientos_dao().calcular_puntaje(id_convocatoria)
+    if isinstance(calcular, Error):
+        return jsonify({"success": False, "message" : str(calcular), "origen": "calcular"}) , HTTPStatus.BAD_REQUEST
+    print(calcular)
+    if calcular is True:
+        return jsonify({"success": True, "message" : "Convocatoria actualizada con éxito!"}) , HTTPStatus.OK
+    
+    return jsonify({"success": False, "message" : calcular["mensaje_error"]}) , HTTPStatus.BAD_REQUEST   
+    
 
 
 

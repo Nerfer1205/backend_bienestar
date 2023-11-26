@@ -16,6 +16,7 @@ from app.daos.DAOoracle import (
     SOLICITUD_APROBADA_ACTIVIDAD_DE_APOYO_DAO_ORACLE,
     ACTIVIDAD_DE_APOYO_DAO_ORACLE,
     DBA_USERS_DAO_ORACLE,
+    PROCEDIMIENTOS
 )
 
 
@@ -37,6 +38,7 @@ class DAOFactoryOracle:
     _solicitudes_aprobadas_actividades_de_apoyo_dao = None
     _actividades_de_apoyo_dao = None
     _usuario_dao = None
+    _procedimientos_dao = None
 
     @classmethod
     def __new__(self, *args, **kwargs):
@@ -138,3 +140,11 @@ class DAOFactoryOracle:
         if not self._usuario_dao:
             self._usuario_dao = DBA_USERS_DAO_ORACLE()
         return self._usuario_dao
+    
+    @classmethod
+    def get_procedimientos_dao(self):
+        if not self._procedimientos_dao:
+            self._procedimientos_dao = PROCEDIMIENTOS()
+        return self._procedimientos_dao
+    
+    

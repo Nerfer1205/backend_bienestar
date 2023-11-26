@@ -107,3 +107,8 @@ class DBA_USERS_DAO(DAOGenerico):
     def crear_usuario(self,usuario, contrasena):
         pass
 
+class PROCEDIMIENTOS(DAOGenerico):
+    @abstractmethod
+    def calcular_puntaje(self,id_convocatora):
+        pass
+

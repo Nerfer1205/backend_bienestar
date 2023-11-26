@@ -27,36 +27,36 @@ CREATE OR REPLACE PACKAGE BODY PK_ASIGNAR_BENEFICIO AS
     -- Declaración de un cursor que selecciona tipos de subsidio disponibles para la convocatoria
     CURSOR c_tipo_subsidio(ck_id_convocatoria convocatoria.id_convocatoria%TYPE) IS
         SELECT ts.id_tipo_subsidio, cts.cantidad FROM convocatoria_tipo_subsidio cts, tipo_subsidio ts
-        WHERE cts.fk_id_convocatoria = ck_id_convocatoria 
+        WHERE cts.fk_id_convocatoria = 2 and ts.id_tipo_subsidio = cts.fk_id_tipo_subsidio
         ORDER BY ts.por_cobertura DESC, ts.hrs_dedicacion_x_sem ASC;
     --Declaración de variables locales
     ln_pos_actual NUMBER(10);
     ln_cantidad_disp NUMBER(10);
     BEGIN
-    ln_pos_actual := 1;
+        pc_error := 0; 
+        pm_error := null;
+        ln_pos_actual := 1;
     
-    -- Iterar a través de los tipos de subsidio disponibles
-    FOR lc_tipo_subsidio IN c_tipo_subsidio(pk_id_convocatoria) LOOP
-        ln_cantidad_disp := lc_tipo_subsidio.cantidad;
-        
-        -- Iterar a través de las solicitud y asignar subsidios
-        FOR i IN ln_pos_actual..pv_solicitudes_tp_subsidio.COUNT LOOP
-            pv_solicitudes_tp_subsidio(i).k_id_tipo_subsidio := lc_tipo_subsidio.id_tipo_subsidio;
-            ln_cantidad_disp := ln_cantidad_disp - 1;
-            
-            -- Salir del bucle interno si no quedan subsidios disponibles
-            IF ln_cantidad_disp = 0 THEN
+        -- Iterar a través de los tipos de subsidio disponibles
+        FOR lc_tipo_subsidio IN c_tipo_subsidio(pk_id_convocatoria) LOOP
+            ln_cantidad_disp := lc_tipo_subsidio.cantidad;
+            -- Iterar a través de las solicitud y asignar subsidios
+            FOR i IN ln_pos_actual..pv_solicitudes_tp_subsidio.COUNT LOOP
+                pv_solicitudes_tp_subsidio(i).k_id_tipo_subsidio := lc_tipo_subsidio.id_tipo_subsidio;
+                ln_cantidad_disp := ln_cantidad_disp - 1;
+                -- Salir del bucle interno si no quedan subsidios disponibles
+                
+                ln_pos_actual := i + 1;
+                
+                IF ln_cantidad_disp = 0 THEN
+                    EXIT;
+                END IF;                
+            END LOOP;
+            -- Salir del bucle externo si se han asignado todos los subsidios
+            IF ln_pos_actual > pv_solicitudes_tp_subsidio.COUNT THEN
                 EXIT;
             END IF;
-            
-            ln_pos_actual := i + 1;
         END LOOP;
-        
-        -- Salir del bucle externo si se han asignado todos los subsidios
-        IF ln_pos_actual > pv_solicitudes_tp_subsidio.COUNT THEN
-            EXIT;
-        END IF;
-    END LOOP;
     
     -- Manejo de excepciones
     EXCEPTION
@@ -93,6 +93,8 @@ CREATE OR REPLACE PACKAGE BODY PK_ASIGNAR_BENEFICIO AS
     lk_id_responsable VARCHAR2(30);
 
     BEGIN
+    pc_error := 0; 
+    pm_error := null;
     -- Obtener el documento del responsable asociado al usuario que ejecuta el procedimiento
     SELECT documento INTO lk_id_responsable FROM responsable WHERE usuario = USER;
 
@@ -103,8 +105,8 @@ CREATE OR REPLACE PACKAGE BODY PK_ASIGNAR_BENEFICIO AS
             UPDATE solicitud SET estado = 'RECHAZADA', motivo_rechazo = 'Puntaje insuficiente' 
             WHERE id_solicitud = pv_solicitudes_tp_subsidio(i).k_id_solicitud;
         ELSE
-            -- Si el tipo de subsidio no es nulo, marcar la solicitud como 'APROBADO'
-            UPDATE solicitud SET estado = 'APROBADO' WHERE id_solicitud = pv_solicitudes_tp_subsidio(i).k_id_solicitud;
+            -- Si el tipo de subsidio no es nulo, marcar la solicitud como 'APROBADA'
+            UPDATE solicitud SET estado = 'APROBADA' WHERE id_solicitud = pv_solicitudes_tp_subsidio(i).k_id_solicitud;
             
             -- Insertar la solicitud aprobada en la tabla "solicitud_aprobada"
             INSERT INTO solicitud_aprobada VALUES(NULL, SYSDATE, 'APROBADA', NULL, 
@@ -181,6 +183,7 @@ CREATE OR REPLACE PACKAGE BODY PK_ASIGNAR_BENEFICIO AS
             -- Actualizar el estado de la convocatoria a 'PUBLICACION' en caso de no haber error
             IF(pc_error = 0) THEN
                 UPDATE convocatoria SET estado = 'PUBLICACION' WHERE id_convocatoria = pid_convocatoria;
+                COMMIT;
             END IF;
         ELSE
             pc_error := 3;

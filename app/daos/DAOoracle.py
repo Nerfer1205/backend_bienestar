@@ -460,3 +460,35 @@ class PROCEDIMIENTOS(DAOgenericoOracle, DAOgen.PROCEDIMIENTOS):
                 return {"codigo_error": lc_error.getvalue(), "mensaje_error":lm_error.getvalue()}
         except oracledb.Error as error:
             return error
+
+    def asignar_beneficio(self, id_convocatora):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            lc_error = self.cursor.var(int)
+            lm_error = self.cursor.var(str)
+
+            self.cursor.callproc(f'{self.esquema}.PK_ASIGNAR_BENEFICIO.PR_ASIGNAR_BENEFICIO', [id_convocatora, lc_error, lm_error])
+            if(lc_error.getvalue() == 0):
+                return True
+            else:
+                return {"codigo_error": lc_error.getvalue(), "mensaje_error":lm_error.getvalue()}
+        except oracledb.Error as error:
+            return error
+    
+    def generar_archivo(self, id_convocatora):
+        conecto = self.conectar()
+        if isinstance(conecto, oracledb.Error):
+            return conecto
+        try:
+            lc_error = self.cursor.var(int)
+            lm_error = self.cursor.var(str)
+
+            self.cursor.callproc(f'{self.esquema}.PK_PUBLICACION.PR_GUARDAR_LISTADO', [id_convocatora, lc_error, lm_error])
+            if(lc_error.getvalue() == 0):
+                return True
+            else:
+                return {"codigo_error": lc_error.getvalue(), "mensaje_error":lm_error.getvalue()}
+        except oracledb.Error as error:
+            return error

@@ -2,10 +2,6 @@
 CREATE OR REPLACE TRIGGER TG_SOLICITUD
 AFTER UPDATE OF puntaje_total, estado ON solicitud
 FOR EACH ROW
-DECLARE
-    -- Variables locales para control de errores
-    lc_error NUMBER(10);
-    lm_error VARCHAR(50);
 BEGIN
     -- Verifica si los valores de 'puntaje_total' o 'estado' han cambiado
     IF :new.puntaje_total != :old.puntaje_total OR :new.estado != :old.estado THEN

@@ -611,8 +611,34 @@ def calcular_puntaje_convocatoria(id_convocatoria):
         return jsonify({"success": True, "message" : "Convocatoria actualizada con éxito!"}) , HTTPStatus.OK
     
     return jsonify({"success": False, "message" : calcular["mensaje_error"]}) , HTTPStatus.BAD_REQUEST   
-    
 
+
+@convocatoria_bp.route('/asignar-beneficio/<id_convocatoria>',methods=["POST"])
+@token_required
+def asignar_beneficio_convocatoria(id_convocatoria):
+   
+    asignar = DAOFactoryOracle.get_procedimientos_dao().asignar_beneficio(id_convocatoria)
+    if isinstance(asignar, Error):
+        return jsonify({"success": False, "message" : str(asignar), "origen": "asignar"}) , HTTPStatus.BAD_REQUEST
+    print(asignar)
+    if asignar is True:
+        return jsonify({"success": True, "message" : "Beneficios de la convocatoria asignados con éxito!"}) , HTTPStatus.OK
+    
+    return jsonify({"success": False, "message" : asignar["mensaje_error"]}) , HTTPStatus.BAD_REQUEST   
+    
+@convocatoria_bp.route('/generar-archivo/<id_convocatoria>',methods=["POST"])
+@token_required
+def generar_archivo_convocatoria(id_convocatoria):
+   
+    generar = DAOFactoryOracle.get_procedimientos_dao().generar_archivo(id_convocatoria)
+    if isinstance(generar, Error):
+        return jsonify({"success": False, "message" : str(generar), "origen": "generar"}) , HTTPStatus.BAD_REQUEST
+    print(generar)
+    if generar is True:
+        return jsonify({"success": True, "message" : "Archivo generado correctamente"}) , HTTPStatus.OK
+    
+    return jsonify({"success": False, "message" : generar["mensaje_error"]}) , HTTPStatus.BAD_REQUEST   
+    
 
 
 def verificar_datos_vacios_inscribirme(json_recibido):

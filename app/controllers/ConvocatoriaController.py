@@ -639,7 +639,26 @@ def generar_archivo_convocatoria(id_convocatoria):
     
     return jsonify({"success": False, "message" : generar["mensaje_error"]}) , HTTPStatus.BAD_REQUEST   
     
-
+@convocatoria_bp.route('/ver-datos-conv/<id_convocatoria>',methods=["GET"])
+@token_required
+def ver_datos_convocatoria(id_convocatoria):
+    convocatoria = CONVOCATORIA(id=id_convocatoria)
+    convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
+    if isinstance(convocatoria, Error):
+        return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
+   
+    if convocatoria is None:
+        return jsonify({"success": False, "message" : "No existe esa convocatoria"}) , HTTPStatus.BAD_REQUEST
+    
+       
+    return jsonify({"success": True, "message" : "Solicitudes consultadas con éxito!", "data": {
+        "CONVOCATORIA": {
+            "ID_CONVOCATORIA": convocatoria.ID_CONVOCATORIA,
+            "FECHA_I_INSC": dateToStr(convocatoria.FECHA_I_INSC),
+            "FECHA_F_INSC": dateToStr(convocatoria.FECHA_I_VERIF),
+            "ESTADO": convocatoria.ESTADO
+        }
+    }}) , HTTPStatus.OK
 
 def verificar_datos_vacios_inscribirme(json_recibido):
     if 'usuario' not in json_recibido or len(json_recibido['usuario'].strip()) == 0:

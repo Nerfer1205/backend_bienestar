@@ -364,8 +364,9 @@ class SOLICITUD_DAO_ORACLE(DAOgenericoOracle, DAOgen.SOLICITUD_DAO):
         if isinstance(conecto, oracledb.Error):
             return conecto
         try:
-            sql = f'''SELECT s.id_solicitud, s.puntaje_total, e.nombres, e.apellidos, e.correo, ts.nombre FROM B_SOLICITUD s, B_ESTUDIANTE e, B_SOLICITUD_APROBADA sa, B_TIPO_SUBSIDIO ts WHERE 
-                            s.estado IN('APROBADO') AND
+            sql = f'''
+                            SELECT s.id_solicitud, s.puntaje_total, e.nombres, e.apellidos, e.correo, ts.nombre FROM B_SOLICITUD s, B_ESTUDIANTE e, B_SOLICITUD_APROBADA sa, B_TIPO_SUBSIDIO ts WHERE 
+                            s.estado IN('APROBADA') AND
                             e.codigo = s.fk_codigo AND
                             sa.fk_id_solicitud = s.id_solicitud AND
                             sa.fk_id_tipo_subsidio = ts.id_tipo_subsidio AND

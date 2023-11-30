@@ -32,7 +32,8 @@ def notificar_estudiantes(id_convocatoria):
     consultaSolicitudes = DAOFactoryOracle.get_solicitudes_dao().solicitudes_aprobadas_x_convocatoria(convocatoria.ID_CONVOCATORIA)
     if isinstance(consultaSolicitudes, Error):
         return jsonify({"success": False, "message" : str(consultaSolicitudes), "origen": "consultaSolicitudes"}) , HTTPStatus.BAD_REQUEST
-
+    
+    print('llegue aca')
     for respSol in consultaSolicitudes:
         id_solicitud = respSol[0]
         puntaje_total = respSol[1]
@@ -50,9 +51,12 @@ def notificar_estudiantes(id_convocatoria):
         msg['Subject'] = 'Respuesta Solicitud #' + id_solicitud
         msg['From'] = 'info@bienestarud.com'
         msg['To'] = correo
+        print('llegue aca')
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=contexto) as server:
+            
             server.login(current_app.config['MAIL'], current_app.config['MAIL_PASS'])
             server.sendmail(current_app.config['MAIL'], correo, msg.as_string())
+            
 
     return jsonify({"success": True, "message" : "Se han notificado a los estudiantes con éxito!"}) , HTTPStatus.OK
 

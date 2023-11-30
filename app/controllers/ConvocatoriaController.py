@@ -249,6 +249,7 @@ def ver_documentos_x_convocatoria_solicitud(id_convocatoria, id_solicitud):
 @token_required
 def actualizar_documentos():
     json_recibido = request.get_json()
+    print("a")
     if 'id_convocatoria' not in json_recibido or len(json_recibido['id_convocatoria'].strip()) == 0:
         return jsonify({"success": False, "error" : "Campo id convocatoria vacio"}), HTTPStatus.BAD_REQUEST
     
@@ -261,7 +262,7 @@ def actualizar_documentos():
     convocatoria = DAOFactoryOracle.get_convocatoria_dao().read(convocatoria)
     if isinstance(convocatoria, Error):
         return jsonify({"success": False, "message" : str(convocatoria), "origen": "convocatoria"}) , HTTPStatus.BAD_REQUEST
-
+    
     solicitud = SOLICITUD(id=id_solicitud)
     solicitud = DAOFactoryOracle.get_solicitudes_dao().read(solicitud)
     if isinstance(solicitud, Error):
@@ -456,6 +457,7 @@ def nueva_convocatoria():
             
             item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"] = tipo_subidio.ID_TIPO_SUBSIDIO
 
+        print(item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"],convocatoria.ID_CONVOCATORIA)
         nuevaRelTipoSubsidio = CONVOCATORIA_TIPO_SUBSIDIO(
             FK_ID_CONVOCATORIA = convocatoria.ID_CONVOCATORIA,
             FK_ID_TIPO_SUBSIDIO = item_TIPO_SUBSIDIO["ID_TIPO_SUBSIDIO"],

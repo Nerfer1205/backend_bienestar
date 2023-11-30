@@ -48,7 +48,7 @@ def notificar_estudiantes(id_convocatoria):
                     f'<p>Cordialmente <br> Bienestar UD</p>'                   
                     , 'html')
 
-        msg['Subject'] = 'Respuesta Solicitud #' + id_solicitud
+        msg['Subject'] = 'Respuesta Solicitud #' + str(id_solicitud)
         msg['From'] = 'info@bienestarud.com'
         msg['To'] = correo
         print('llegue aca')
